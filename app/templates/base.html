@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}销售管理系统{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="bi bi-box-seam"></i> <span data-i18n="common.system_name">销售管理系统</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">
+                            <i class="bi bi-house"></i> <span data-i18n="nav.home">首页</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-cart"></i> <span data-i18n="nav.sales">销售管理</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('sales.list_sales') }}"><span
+                                        data-i18n="sales.list">销售单列表</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('sales.create_sale') }}"><span
+                                        data-i18n="sales.create">创建销售单</span></a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-box"></i> <span data-i18n="nav.inventory">库存管理</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('inventory.current_stock') }}"><span
+                                        data-i18n="inventory.current">当前库存</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('inventory.stock_moves') }}"><span
+                                        data-i18n="inventory.moves">库存变动</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('inventory.inventory_check') }}"><span
+                                        data-i18n="inventory.check">库存盘点</span></a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('reports.index') }}">
+                            <i class="bi bi-graph-up"></i> <span data-i18n="nav.reports">报表统计</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear"></i> <span data-i18n="nav.admin">系统管理</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_specs') }}"><span
+                                        data-i18n="nav.specs">规格管理</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_customers') }}"><span
+                                        data-i18n="nav.customers">客户管理</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.audit_logs') }}"><span
+                                        data-i18n="nav.audit">审计日志</span></a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <!-- 语言切换 -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-translate"></i>
+                            <span id="currentLang">中文</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="switchLanguage('zh'); return false;">
+                                    🇨🇳 中文
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="switchLanguage('en'); return false;">
+                                    🇺🇸 English
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="switchLanguage('es'); return false;">
+                                    🇪🇸 Español
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <span class="navbar-text text-white">
+                        <i class="bi bi-person-circle"></i> Jose Burgueno
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash消息 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container mt-3">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+            role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- 主内容 -->
+    <main class="container-fluid mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer mt-5 py-3 bg-light">
+        <div class="container text-center">
+            <span class="text-muted" data-i18n="common.footer">© 2026 销售管理系统 | 严格遵循业务规则：禁止自由输入、自动计算、可追溯、禁止删除</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- i18n -->
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

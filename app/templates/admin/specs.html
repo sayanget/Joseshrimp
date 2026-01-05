@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}规格管理 - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-rulers"></i> <span data-i18n="admin.specs">规格管理</span></h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSpecModal">
+            <i class="bi bi-plus-circle"></i> <span data-i18n="admin.add_spec">添加规格</span>
+        </button>
+    </div>
+</div>
+
+<!-- 规格列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th data-i18n="admin.spec_name">规格名称</th>
+                        <th data-i18n="admin.length">长度(cm)</th>
+                        <th data-i18n="admin.width">宽度(cm)</th>
+                        <th data-i18n="admin.kg_per_box">单箱重量(KG)</th>
+                        <th data-i18n="common.status">状态</th>
+                        <th data-i18n="admin.created_time">创建时间</th>
+                        <th data-i18n="common.actions">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for spec in specs %}
+                    <tr class="{% if not spec.active %}table-secondary{% endif %}">
+                        <td>{{ spec.id }}</td>
+                        <td><strong>{{ spec.name }}</strong></td>
+                        <td>{{ spec.length }}</td>
+                        <td>{{ spec.width }}</td>
+                        <td class="text-primary"><strong>{{ spec.kg_per_box|number(3) }}</strong></td>
+                        <td>
+                            <span class="badge bg-{% if spec.active %}success{% else %}secondary{% endif %}"
+                                data-i18n="{% if spec.active %}common.enabled{% else %}common.disabled{% endif %}">
+                                {{ '启用' if spec.active else '禁用' }}
+                            </span>
+                        </td>
+                        <td>{{ spec.created_at|datetime }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info"
+                                onclick="editSpec({{ spec.id }}, {{ spec.kg_per_box }})">
+                                <i class="bi bi-pencil"></i> <span data-i18n="common.edit">编辑</span>
+                            </button>
+                            {% if spec.active %}
+                            <button class="btn btn-sm btn-warning" onclick="deactivateSpec({{ spec.id }})">
+                                <i class="bi bi-x-circle"></i> <span data-i18n="admin.deactivate">禁用</span>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 添加规格模态框 -->
+<div class="modal fade" id="addSpecModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加规格</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addSpecForm">
+                    <div class="mb-3">
+                        <label class="form-label">规格名称 <span class="text-danger">*</span></label>
+                        <input type="text" id="specName" class="form-control" placeholder="如：JAVA 36x100" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">长度(cm) <span class="text-danger">*</span></label>
+                            <input type="number" id="specLength" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">宽度(cm) <span class="text-danger">*</span></label>
+                            <input type="number" id="specWidth" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">单箱重量(KG) <span class="text-danger">*</span></label>
+                        <input type="number" id="specKgPerBox" class="form-control" step="0.001" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span
+                        data-i18n="common.cancel">取消</span></button>
+                <button type="button" class="btn btn-primary" onclick="submitSpec()"><span
+                        data-i18n="common.submit">提交</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑规格模态框 -->
+<div class="modal fade" id="editSpecModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑规格</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editSpecForm">
+                    <input type="hidden" id="editSpecId">
+                    <div class="mb-3">
+                        <label class="form-label">单箱重量(KG) <span class="text-danger">*</span></label>
+                        <input type="number" id="editSpecKgPerBox" class="form-control" step="0.001" required>
+                        <div class="form-text">只能修改单箱重量，其他信息不可修改</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span
+                        data-i18n="common.cancel">取消</span></button>
+                <button type="button" class="btn btn-primary" onclick="updateSpec()"><span
+                        data-i18n="common.save">更新</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function submitSpec() {
+        const name = document.getElementById('specName').value;
+        const length = document.getElementById('specLength').value;
+        const width = document.getElementById('specWidth').value;
+        const kgPerBox = document.getElementById('specKgPerBox').value;
+
+        if (!name || !length || !width || !kgPerBox) {
+            utils.showAlert('请填写所有必填字段', 'danger');
+            return;
+        }
+
+        try {
+            await utils.apiRequest('/api/admin/specs', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name, length, width, kg_per_box: parseFloat(kgPerBox),
+                    created_by: 'Jose Burgueno'
+                })
+            });
+
+            utils.showAlert('规格添加成功！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+
+    function editSpec(id, kgPerBox) {
+        document.getElementById('editSpecId').value = id;
+        document.getElementById('editSpecKgPerBox').value = kgPerBox;
+        new bootstrap.Modal(document.getElementById('editSpecModal')).show();
+    }
+
+    async function updateSpec() {
+        const id = document.getElementById('editSpecId').value;
+        const kgPerBox = document.getElementById('editSpecKgPerBox').value;
+
+        try {
+            await utils.apiRequest(`/api/admin/specs/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    kg_per_box: parseFloat(kgPerBox),
+                    updated_by: 'Jose Burgueno'
+                })
+            });
+
+            utils.showAlert('规格更新成功！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+
+    async function deactivateSpec(id) {
+        if (!confirm('确定要禁用此规格吗？禁用后将无法在新订单中使用。')) {
+            return;
+        }
+
+        try {
+            await utils.apiRequest(`/api/admin/specs/${id}/deactivate`, {
+                method: 'POST',
+                body: JSON.stringify({ updated_by: 'Jose Burgueno' })
+            });
+
+            utils.showAlert('规格已禁用！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+</script>
+{% endblock %}

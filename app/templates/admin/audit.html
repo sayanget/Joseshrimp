@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}审计日志 - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <h2><i class="bi bi-journal-text"></i> <span data-i18n="admin.audit">审计日志</span></h2>
+    </div>
+</div>
+
+<!-- 筛选 -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">表名</label>
+                <select name="table_name" class="form-select" onchange="this.form.submit()">
+                    <option value="">全部</option>
+                    <option value="sale" {% if request.args.get('table_name')=='sale' %}selected{% endif %}>销售单</option>
+                    <option value="spec" {% if request.args.get('table_name')=='spec' %}selected{% endif %}>规格</option>
+                    <option value="customer" {% if request.args.get('table_name')=='customer' %}selected{% endif %}>客户
+                    </option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">操作类型</label>
+                <select name="action" class="form-select" onchange="this.form.submit()">
+                    <option value="">全部</option>
+                    <option value="INSERT" {% if request.args.get('action')=='INSERT' %}selected{% endif %}>新增</option>
+                    <option value="UPDATE" {% if request.args.get('action')=='UPDATE' %}selected{% endif %}>更新</option>
+                    <option value="VOID" {% if request.args.get('action')=='VOID' %}selected{% endif %}>作废</option>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 日志列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>表名</th>
+                        <th>记录ID</th>
+                        <th>操作</th>
+                        <th>操作人</th>
+                        <th>旧值</th>
+                        <th>新值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in pagination.items %}
+                    <tr>
+                        <td><small>{{ log.created_at|datetime }}</small></td>
+                        <td>
+                            <span class="badge bg-secondary">{{ log.table_name }}</span>
+                        </td>
+                        <td><code>{{ log.record_id }}</code></td>
+                        <td>
+                            <span
+                                class="badge bg-{% if log.action == 'INSERT' %}success{% elif log.action == 'UPDATE' %}info{% else %}warning{% endif %}">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td><small>{{ log.created_by }}</small></td>
+                        <td>
+                            {% if log.old_value %}
+                            <button class="btn btn-sm btn-outline-secondary"
+                                onclick="showJson('{{ log.old_value|replace("'", "\\'") }}')">
+                                <i class="bi bi-eye"></i> 查看
+                            </button>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.new_value %}
+                            <button class="btn btn-sm btn-outline-primary"
+                                onclick="showJson('{{ log.new_value|replace("'", "\\'") }}')">
+                                <i class="bi bi-eye"></i> 查看
+                            </button>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        {% if pagination.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin.audit_logs', page=pagination.prev_num) }}">上一页</a>
+                </li>
+                {% for p in pagination.iter_pages() %}
+                {% if p %}
+                <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin.audit_logs', page=p) }}">{{ p }}</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin.audit_logs', page=pagination.next_num) }}">下一页</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- JSON查看模态框 -->
+<div class="modal fade" id="jsonModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">数据详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="jsonContent" class="bg-light p-3" style="max-height: 400px; overflow-y: auto;"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showJson(jsonStr) {
+        try {
+            const obj = JSON.parse(jsonStr);
+            document.getElementById('jsonContent').textContent = JSON.stringify(obj, null, 2);
+            new bootstrap.Modal(document.getElementById('jsonModal')).show();
+        } catch (e) {
+            document.getElementById('jsonContent').textContent = jsonStr;
+            new bootstrap.Modal(document.getElementById('jsonModal')).show();
+        }
+    }
+</script>
+{% endblock %}

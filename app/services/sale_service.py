@@ -1,0 +1,240 @@
+"""
+销售业务逻辑服务
+"""
+from app import db
+from app.models import Sale, SaleItem, Customer, Spec, StockMove, AuditLog
+from datetime import datetime
+from sqlalchemy import func
+import json
+
+class SaleService:
+    """销售业务逻辑"""
+    
+    @staticmethod
+    def generate_sale_id():
+        """生成销售单号：SALE-YYYYMMDD-序号"""
+        today = datetime.now().strftime('%Y%m%d')
+        prefix = f'SALE-{today}-'
+        
+        # 查询今日最大序号
+        last_sale = db.session.query(Sale).filter(
+            Sale.id.like(f'{prefix}%')
+        ).order_by(Sale.id.desc()).first()
+        
+        if last_sale:
+            last_seq = int(last_sale.id.split('-')[-1])
+            new_seq = last_seq + 1
+        else:
+            new_seq = 1
+        
+        return f'{prefix}{new_seq:03d}'
+    
+    @staticmethod
+    def create_sale(customer_id, payment_type, items_data, created_by, sale_time=None):
+        """
+        创建销售单
+        
+        Args:
+            customer_id: 客户ID
+            payment_type: 支付方式
+            items_data: 明细数据 [{'spec_id': 1, 'box_qty': 2, 'extra_kg': 5}, ...]
+            created_by: 创建人
+            sale_time: 销售时间（可选，默认当前时间）
+            
+        Returns:
+            Sale: 创建的销售单对象
+            
+        Raises:
+            ValueError: 业务规则违反时抛出异常
+        """
+        # 验证客户
+        customer = Customer.query.get(customer_id)
+        if not customer:
+            raise ValueError('客户不存在')
+        
+        if not customer.active:
+            raise ValueError('客户已禁用')
+        
+        # 验证支付方式
+        if payment_type == 'Crédito' and not customer.credit_allowed:
+            raise ValueError('该客户不允许使用信用支付')
+        
+        # 验证明细数据
+        if not items_data or len(items_data) == 0:
+            raise ValueError('销售明细不能为空')
+        
+        # 创建销售单
+        sale = Sale(
+            id=SaleService.generate_sale_id(),
+            sale_time=sale_time or datetime.now(),
+            customer_id=customer_id,
+            payment_type=payment_type,
+            created_by=created_by
+        )
+        db.session.add(sale)
+        
+        # 创建明细
+        from decimal import Decimal
+        for item_data in items_data:
+            spec = Spec.query.get(item_data['spec_id'])
+            if not spec or not spec.active:
+                raise ValueError(f'规格ID {item_data["spec_id"]} 不存在或已禁用')
+            
+            item = SaleItem(
+                sale_id=sale.id,
+                spec_id=item_data['spec_id'],
+                box_qty=item_data.get('box_qty', 0),
+                extra_kg=Decimal(str(item_data.get('extra_kg', 0)))
+            )
+            db.session.add(item)
+        
+        # 记录审计日志
+        audit_log = AuditLog(
+            table_name='sale',
+            record_id=sale.id,
+            action='INSERT',
+            new_value=json.dumps({
+                'id': sale.id,
+                'customer_id': customer_id,
+                'payment_type': payment_type
+            }),
+            created_by=created_by
+        )
+        db.session.add(audit_log)
+        
+        db.session.commit()
+        
+        # 刷新以获取触发器计算的值
+        db.session.refresh(sale)
+        
+        return sale
+    
+    @staticmethod
+    def void_sale(sale_id, void_reason, void_by):
+        """
+        作废销售单
+        
+        Args:
+            sale_id: 销售单号
+            void_reason: 作废原因
+            void_by: 作废人
+            
+        Returns:
+            Sale: 作废后的销售单对象
+        """
+        sale = Sale.query.get(sale_id)
+        if not sale:
+            raise ValueError('销售单不存在')
+        
+        if sale.status == 'void':
+            raise ValueError('销售单已作废')
+        
+        if not void_reason:
+            raise ValueError('必须填写作废原因')
+        
+        # 记录旧值
+        old_value = json.dumps({
+            'status': sale.status,
+            'total_kg': float(sale.total_kg)
+        })
+        
+        sale.status = 'void'
+        sale.void_reason = void_reason
+        sale.void_time = datetime.now()
+        sale.void_by = void_by
+        sale.updated_by = void_by
+        sale.updated_at = datetime.now()
+        
+        # 记录审计日志
+        audit_log = AuditLog(
+            table_name='sale',
+            record_id=sale.id,
+            action='VOID',
+            old_value=old_value,
+            new_value=json.dumps({
+                'status': 'void',
+                'void_reason': void_reason
+            }),
+            created_by=void_by
+        )
+        db.session.add(audit_log)
+        
+        db.session.commit()
+        
+        return sale
+    
+    @staticmethod
+    def get_sales_list(page=1, per_page=20, status=None, 
+                      customer_id=None, date_from=None, date_to=None):
+        """
+        获取销售单列表（分页）
+        
+        Args:
+            page: 页码
+            per_page: 每页数量
+            status: 状态过滤
+            customer_id: 客户ID过滤
+            date_from: 开始日期
+            date_to: 结束日期
+            
+        Returns:
+            Pagination: 分页对象
+        """
+        query = Sale.query
+        
+        if status:
+            query = query.filter(Sale.status == status)
+        
+        if customer_id:
+            query = query.filter(Sale.customer_id == customer_id)
+        
+        if date_from:
+            query = query.filter(Sale.sale_time >= date_from)
+        
+        if date_to:
+            query = query.filter(Sale.sale_time <= date_to)
+        
+        return query.order_by(Sale.sale_time.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+    
+    @staticmethod
+    def get_sale_detail(sale_id):
+        """获取销售单详情"""
+        sale = Sale.query.get(sale_id)
+        if not sale:
+            raise ValueError('销售单不存在')
+        
+        return sale
+    
+    @staticmethod
+    def get_today_summary():
+        """获取今日销售汇总"""
+        today = datetime.now().date()
+        
+        result = db.session.query(
+            func.count(Sale.id).label('order_count'),
+            func.sum(Sale.total_kg).label('total_kg'),
+            func.sum(
+                db.case(
+                    (Sale.payment_type == '现金', Sale.total_kg),
+                    else_=0
+                )
+            ).label('cash_kg'),
+            func.sum(
+                db.case(
+                    (Sale.payment_type == 'Crédito', Sale.total_kg),
+                    else_=0
+                )
+            ).label('credit_kg')
+        ).filter(
+            func.date(Sale.sale_time) == today,
+            Sale.status == 'active'
+        ).first()
+        
+        return {
+            'order_count': result.order_count or 0,
+            'total_kg': float(result.total_kg or 0),
+            'cash_kg': float(result.cash_kg or 0),
+            'credit_kg': float(result.credit_kg or 0)
+        }

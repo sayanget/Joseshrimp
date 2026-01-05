@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="inventory.current">当前库存</span> - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <h2><i class="bi bi-box-seam"></i> <span data-i18n="inventory.current">当前库存</span></h2>
+    </div>
+</div>
+
+<!-- 库存概览 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card {% if stock.warning %}border-danger{% endif %}">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> <span data-i18n="inventory.overview">库存概览</span>
+                    {% if stock.warning %}
+                    <span class="badge bg-danger" data-i18n="home.stock_warning">库存预警</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong data-i18n="inventory.total_stock">库存总量</strong>: <span
+                        class="fs-4 text-primary">{{ stock.current_stock_kg|number }} <span
+                            data-i18n="common.kg">KG</span></span></p>
+                {% if stock.last_move_time %}
+                <p class="mb-0 text-muted"><small><span data-i18n="inventory.last_move">最后变动</span>: {{
+                        stock.last_move_time|datetime }}</small></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning"></i> <span data-i18n="home.quick_actions">快速操作</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('inventory.stock_moves') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-arrow-down-up"></i> <span data-i18n="inventory.moves">库存变动</span>
+                    </a>
+                    <a href="{{ url_for('inventory.inventory_check') }}" class="btn btn-warning btn-lg">
+                        <i class="bi bi-clipboard-check"></i> <span data-i18n="inventory.check">库存盘点</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

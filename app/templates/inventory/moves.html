@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="inventory.moves">库存变动</span> - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-arrow-down-up"></i> <span data-i18n="inventory.moves">库存变动</span></h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('inventory.current_stock') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> <span data-i18n="common.back">返回库存概览</span>
+        </a>
+    </div>
+</div>
+
+<!-- 筛选 -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label" data-i18n="inventory.move_type">变动类型</label>
+                <select name="move_type" class="form-select" onchange="this.form.submit()">
+                    <option value="" data-i18n="inventory.all_types">全部</option>
+                    <option value="进货" {% if move_type=='进货' %}selected{% endif %} data-i18n="inventory.type_purchase">
+                        进货</option>
+                    <option value="调拨" {% if move_type=='调拨' %}selected{% endif %} data-i18n="inventory.type_transfer">
+                        调拨</option>
+                    <option value="退货" {% if move_type=='退货' %}selected{% endif %} data-i18n="inventory.type_return">退货
+                    </option>
+                    <option value="盘盈" {% if move_type=='盘盈' %}selected{% endif %} data-i18n="inventory.type_surplus">盘盈
+                    </option>
+                    <option value="盘亏" {% if move_type=='盘亏' %}selected{% endif %} data-i18n="inventory.type_loss">盘亏
+                    </option>
+                    <option value="销售" {% if move_type=='销售' %}selected{% endif %} data-i18n="inventory.type_sale">销售
+                    </option>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 库存变动列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th data-i18n="inventory.move_time">变动时间</th>
+                        <th data-i18n="inventory.move_type">类型</th>
+                        <th data-i18n="inventory.source">来源/去向</th>
+                        <th data-i18n="inventory.weight">重量(KG)</th>
+                        <th data-i18n="inventory.reference">关联单据</th>
+                        <th data-i18n="inventory.notes">备注</th>
+                        <th data-i18n="common.status">状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for move in pagination.items %}
+                    <tr>
+                        <td>{{ move.move_time|datetime }}</td>
+                        <td>
+                            <span
+                                class="badge bg-{% if move.move_type == '进货' or move.move_type == '盘盈' %}success{% elif move.move_type == '销售' %}primary{% else %}warning{% endif %}"
+                                data-i18n="{% if move.move_type == '进货' %}inventory.type_purchase{% elif move.move_type == '调拨' %}inventory.type_transfer{% elif move.move_type == '退货' %}inventory.type_return{% elif move.move_type == '盘盈' %}inventory.type_surplus{% elif move.move_type == '盘亏' %}inventory.type_loss{% elif move.move_type == '销售' %}inventory.type_sale{% endif %}">
+                                {{ move.move_type }}
+                            </span>
+                        </td>
+                        <td>{{ move.source }}</td>
+                        <td class="{% if move.kg > 0 %}text-success{% else %}text-danger{% endif %}">
+                            <strong>{{ move.kg|number(3) }}</strong>
+                        </td>
+                        <td>
+                            {% if move.reference_id %}
+                            <code>{{ move.reference_id }}</code>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>{{ move.notes or '-' }}</td>
+                        <td>
+                            <span class="badge bg-{% if move.status == 'active' %}success{% else %}secondary{% endif %}"
+                                data-i18n="{% if move.status == 'active' %}common.active{% else %}common.void{% endif %}">
+                                {{ '有效' if move.status == 'active' else '已作废' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        {% if pagination.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                    <a class="page-link"
+                        href="{{ url_for('inventory.stock_moves', page=pagination.prev_num, move_type=move_type) }}">上一页</a>
+                </li>
+                {% for p in pagination.iter_pages() %}
+                {% if p %}
+                <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('inventory.stock_moves', page=p, move_type=move_type) }}">{{ p
+                        }}</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                    <a class="page-link"
+                        href="{{ url_for('inventory.stock_moves', page=pagination.next_num, move_type=move_type) }}">下一页</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

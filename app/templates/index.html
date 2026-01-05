@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 销售管理系统{% endblock %}
+
+{% block content %}
+<!-- 页面标题 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-speedometer2"></i> <span data-i18n="home.title">系统概览</span></h2>
+    </div>
+</div>
+
+<!-- 今日销售汇总 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-cart-check"></i> <span data-i18n="home.orders_today">今日订单</span>
+                </h5>
+                <h2 class="card-text">{{ (today_summary.order_count | default(0)) }}</h2>
+                <p class="card-text"><small data-i18n="common.pieces">笔</small></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-graph-up"></i> <span data-i18n="home.sales_today">今日销售</span>
+                </h5>
+                <h2 class="card-text">{{ (today_summary.total_kg | default(0) | number) }}</h2>
+                <p class="card-text"><small data-i18n="common.kg">KG</small></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-cash"></i> <span data-i18n="home.cash_sales">现金销售</span>
+                </h5>
+                <h2 class="card-text">{{ (today_summary.cash_kg | default(0) | number) }}</h2>
+                <p class="card-text"><small data-i18n="common.kg">KG</small></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-credit-card"></i> <span data-i18n="home.credit_sales">信用销售</span>
+                </h5>
+                <h2 class="card-text">{{ (today_summary.credit_kg | default(0) | number) }}</h2>
+                <p class="card-text"><small data-i18n="common.kg">KG</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 当前库存 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card {% if current_stock.warning %}border-danger{% endif %}">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-box-seam"></i> <span data-i18n="home.current_stock">当前库存</span>
+                    {% if current_stock.warning %}
+                    <span class="badge bg-danger" data-i18n="home.stock_warning">库存预警</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <h2 class="text-{% if current_stock.warning %}danger{% else %}primary{% endif %}">
+                    {{ (current_stock.current_stock_kg | default(0) | number) }} <span data-i18n="common.kg">KG</span>
+                </h2>
+                {% if current_stock.last_move_time %}
+                <p class="text-muted">
+                    <span data-i18n="inventory.last_move">最后变动</span>: {{ current_stock.last_move_time|datetime }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning"></i> <span data-i18n="home.quick_actions">快速操作</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('sales.create_sale') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle"></i> <span data-i18n="home.create_sale">创建销售单</span>
+                    </a>
+                    <a href="{{ url_for('inventory.stock_moves') }}" class="btn btn-success btn-lg">
+                        <i class="bi bi-arrow-down-up"></i> <span data-i18n="home.stock_moves">库存变动</span>
+                    </a>
+                    <a href="{{ url_for('reports.index') }}" class="btn btn-info btn-lg">
+                        <i class="bi bi-graph-up"></i> <span data-i18n="home.view_reports">查看报表</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

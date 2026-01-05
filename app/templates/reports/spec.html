@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="reports.spec">按规格统计</span> - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-box"></i> <span data-i18n="reports.spec">按规格统计</span></h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('reports.index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> <span data-i18n="common.back">返回报表首页</span>
+        </a>
+    </div>
+</div>
+
+<!-- 日期选择 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label" data-i18n="reports.date_from">开始日期</label>
+                <input type="date" id="dateFrom" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" data-i18n="reports.date_to">结束日期</label>
+                <input type="date" id="dateTo" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" data-i18n="reports.display_count">显示数量</label>
+                <select id="limit" class="form-select">
+                    <option value="10" data-i18n="reports.top_10">前10名</option>
+                    <option value="20" data-i18n="reports.top_20">前20名</option>
+                    <option value="50" data-i18n="reports.top_50">前50名</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="button" class="btn btn-primary w-100" onclick="loadData()">
+                    <i class="bi bi-search"></i> <span data-i18n="reports.query">查询</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 规格使用统计 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> <span data-i18n="reports.spec_ranking">规格使用排名</span></h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th data-i18n="reports.ranking">排名</th>
+                        <th data-i18n="reports.spec_name">规格名称</th>
+                        <th data-i18n="admin.kg_per_box">单箱重量</th>
+                        <th data-i18n="reports.usage_count">使用次数</th>
+                        <th data-i18n="reports.total_boxes">总箱数</th>
+                        <th data-i18n="reports.extra_kg">散货(KG)</th>
+                        <th data-i18n="reports.total_sales">总销售(KG)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="7" class="text-center text-muted" data-i18n="reports.select_date_range">请选择日期范围查询
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 设置默认日期（最近30天）
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+        document.getElementById('dateFrom').value = thirtyDaysAgo.toISOString().split('T')[0];
+
+        loadData();
+    });
+
+    async function loadData() {
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        const limit = document.getElementById('limit').value;
+
+        try {
+            const response = await utils.apiRequest(
+                `/api/reports/spec-sales?date_from=${dateFrom}&date_to=${dateTo}&limit=${limit}`
+            );
+            const data = response.data || [];
+
+            updateTable(data);
+        } catch (error) {
+            utils.showAlert('加载数据失败: ' + error.message, 'danger');
+        }
+    }
+
+    function updateTable(data) {
+        const tbody = document.getElementById('tableBody');
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">${i18n.t('reports.no_data')}</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map((row, index) => {
+            const rankBadge = index < 3 ?
+                `<span class="badge bg-${index === 0 ? 'warning' : index === 1 ? 'secondary' : 'danger'}">${index + 1}</span>` :
+                `<span class="badge bg-light text-dark">${index + 1}</span>`;
+
+            return `
+            <tr>
+                <td>${rankBadge}</td>
+                <td><strong>${row.spec_name}</strong></td>
+                <td>${utils.formatNumber(row.kg_per_box, 3)}</td>
+                <td>${row.usage_count}</td>
+                <td>${row.total_boxes}</td>
+                <td class="text-warning">${utils.formatNumber(row.total_extra_kg)}</td>
+                <td class="text-primary"><strong>${utils.formatNumber(row.total_kg)}</strong></td>
+            </tr>
+        `;
+        }).join('');
+    }
+</script>
+{% endblock %}

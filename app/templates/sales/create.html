@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="sales.create">创建销售单</span> - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <h2><i class="bi bi-plus-circle"></i> <span data-i18n="sales.create">创建销售单</span></h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form id="saleForm">
+            <!-- 基本信息 -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label"><span data-i18n="sales.customer">客户</span> <span
+                            class="text-danger">*</span></label>
+                    <select id="customerId" class="form-select" required>
+                        <option value="">请选择客户</option>
+                        {% for customer in customers %}
+                        <option value="{{ customer.id }}" data-credit="{{ customer.credit_allowed|lower }}">
+                            {{ customer.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label"><span data-i18n="sales.payment_type">支付方式</span> <span
+                            class="text-danger">*</span></label>
+                    <select id="paymentType" class="form-select" required>
+                        <option value="现金" data-i18n="sales.cash">现金</option>
+                        <option value="Crédito" data-i18n="sales.credit">Crédito</option>
+                    </select>
+                    <div id="creditWarning" class="form-text text-danger" style="display:none;">
+                        该客户不允许使用信用支付
+                    </div>
+                </div>
+            </div>
+
+            <!-- 销售明细 -->
+            <h5 class="mb-3"><span data-i18n="sales.items">销售明细</span></h5>
+            <div id="itemsContainer">
+                <div class="row mb-2 item-row">
+                    <div class="col-md-5">
+                        <label class="form-label"><span data-i18n="sales.spec">规格</span> <span
+                                class="text-danger">*</span></label>
+                        <select class="form-select spec-select" required>
+                            <option value="">请选择规格</option>
+                            {% for spec in specs %}
+                            <option value="{{ spec.id }}" data-kg="{{ spec.kg_per_box }}">
+                                {{ spec.name }} ({{ spec.kg_per_box }}KG/箱)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" data-i18n="sales.box_qty">箱数</label>
+                        <input type="number" class="form-control box-qty" min="0" value="0">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" data-i18n="sales.extra_kg">散货(KG)</label>
+                        <input type="number" class="form-control extra-kg" min="0" step="0.001" value="0">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" data-i18n="sales.subtotal">小计(KG)</label>
+                        <input type="text" class="form-control subtotal-kg" readonly>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="button" class="btn btn-danger btn-sm w-100 remove-item">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-secondary mb-3" id="addItemBtn">
+                <i class="bi bi-plus"></i> <span data-i18n="sales.add_item">添加明细</span>
+            </button>
+
+            <!-- 总计 -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        <h5><span data-i18n="sales.total_weight">总重量</span>: <span id="totalKg">0.000</span> <span
+                                data-i18n="common.kg">KG</span></h5>
+                        <small class="text-muted" data-i18n="sales.auto_calculated">重量由系统自动计算</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <div class="row">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle"></i> <span data-i18n="sales.create">创建销售单</span>
+                    </button>
+                    <a href="{{ url_for('sales.list_sales') }}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-circle"></i> <span data-i18n="common.cancel">取消</span>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/sales.js') }}"></script>
+{% endblock %}
