@@ -86,6 +86,9 @@ const translations = {
         'sales.void_time': '作废时间',
         'sales.void_by': '作废人',
         'sales.auto_calculated': '系统自动计算',
+        'sales.daily_detail': '每日销售详情',
+        'sales.total_amount': '金额',
+        'sales.total_orders': '总订单数',
 
         // 库存
         'inventory.current': '当前库存',
@@ -165,6 +168,7 @@ const translations = {
         'reports.query': '查询',
         'reports.trend': '销售趋势图',
         'reports.detailed_data': '详细数据',
+        'common.no_data': '暂无数据',
 
         // 系统管理
         'admin.specs': '规格管理',
@@ -202,7 +206,13 @@ const translations = {
         'admin.permission_view_sales': '查看销售',
         'admin.permission_view_inventory': '查看库存',
         'admin.permission_view_reports': '查看报表',
-        'admin.permission_admin': '系统管理'
+        'admin.permission_admin': '系统管理',
+        'admin.system_settings': '系统设置',
+        'admin.price_settings': '价格设置',
+        'admin.cash_price': '现金价格',
+        'admin.credit_price': '信用价格',
+        'admin.price_management': '价格管理',
+        'admin.set_price': '设置价格'
     },
 
     en: {
@@ -291,6 +301,9 @@ const translations = {
         'sales.void_time': 'Void Time',
         'sales.void_by': 'Voided By',
         'sales.auto_calculated': 'Auto-calculated by system',
+        'sales.daily_detail': 'Daily Sales Detail',
+        'sales.total_amount': 'Amount',
+        'sales.total_orders': 'Total Orders',
 
         // Inventory
         'inventory.current': 'Current Stock',
@@ -370,6 +383,7 @@ const translations = {
         'reports.query': 'Query',
         'reports.trend': 'Sales Trend',
         'reports.detailed_data': 'Detailed Data',
+        'common.no_data': 'No data available',
 
         // Admin
         'admin.specs': 'Specifications',
@@ -407,7 +421,13 @@ const translations = {
         'admin.permission_view_sales': 'View Sales',
         'admin.permission_view_inventory': 'View Inventory',
         'admin.permission_view_reports': 'View Reports',
-        'admin.permission_admin': 'System Administration'
+        'admin.permission_admin': 'System Administration',
+        'admin.system_settings': 'System Settings',
+        'admin.price_settings': 'Price Settings',
+        'admin.cash_price': 'Cash Price',
+        'admin.credit_price': 'Credit Price',
+        'admin.price_management': 'Price Management',
+        'admin.set_price': 'Set Price'
     },
 
     es: {
@@ -496,6 +516,9 @@ const translations = {
         'sales.void_time': 'Hora de Anulación',
         'sales.void_by': 'Anulado Por',
         'sales.auto_calculated': 'Calculado automáticamente por el sistema',
+        'sales.daily_detail': 'Detalle de Ventas Diarias',
+        'sales.total_amount': 'Monto',
+        'sales.total_orders': 'Total de Pedidos',
 
         // Inventario
         'inventory.current': 'Stock Actual',
@@ -575,6 +598,7 @@ const translations = {
         'reports.query': 'Consultar',
         'reports.trend': 'Tendencia de Ventas',
         'reports.detailed_data': 'Datos Detallados',
+        'common.no_data': 'No hay datos disponibles',
 
         // Administración
         'admin.specs': 'Especificaciones',
@@ -612,7 +636,13 @@ const translations = {
         'admin.permission_view_sales': 'Ver Ventas',
         'admin.permission_view_inventory': 'Ver Inventario',
         'admin.permission_view_reports': 'Ver Reportes',
-        'admin.permission_admin': 'Administración del Sistema'
+        'admin.permission_admin': 'Administración del Sistema',
+        'admin.system_settings': 'Configuración del Sistema',
+        'admin.price_settings': 'Configuración de Precios',
+        'admin.cash_price': 'Precio en Efectivo',
+        'admin.credit_price': 'Precio a Crédito',
+        'admin.price_management': 'Gestión de Precios',
+        'admin.set_price': 'Establecer Precio'
     }
 };
 
