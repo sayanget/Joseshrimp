@@ -57,11 +57,11 @@ def init_supabase_db():
             if Spec.query.count() == 0:
                 print("[INFO] 正在初始化默认规格数据...")
                 default_specs = [
-                    {'code': 'A', 'name': 'Spec A'},
-                    {'code': 'B', 'name': 'Spec B'}
+                    {'name': '39X110', 'length': 110, 'width': 39, 'kg_per_box': 40},
+                    {'name': '38X115', 'length': 115, 'width': 38, 'kg_per_box': 40}
                 ]
                 for s in default_specs:
-                    db.session.add(Spec(code=s['code'], name=s['name']))
+                    db.session.add(Spec(name=s['name'], length=s['length'], width=s['width'], kg_per_box=s['kg_per_box'], created_by='system'))
                 db.session.commit()
                 print("[SUCCESS] 默认数据添加完成")
             else:
@@ -70,9 +70,9 @@ def init_supabase_db():
     except Exception as e:
         print(f"\n[ERROR] 初始化失败: {str(e)}")
         print("请检查：")
-        1. 数据库连接字符串是否正确
-        2. 数据库防火墙是否允许当前IP连接
-        3. 密码是否包含特殊字符（需要URL编码）
+        print("1. 数据库连接字符串是否正确")
+        print("2. 数据库防火墙是否允许当前IP连接")
+        print("3. 密码是否包含特殊字符（需要URL编码）")
 
 if __name__ == '__main__':
     init_supabase_db()
