@@ -43,6 +43,7 @@
                         <th data-i18n="sales.customer">客户</th>
                         <th data-i18n="sales.payment_type">支付方式</th>
                         <th data-i18n="sales.total_weight">总重量(KG)</th>
+                        <th data-i18n="sales.total_amount">金额($)</th>
                         <th data-i18n="common.status">状态</th>
                         <th data-i18n="common.actions">操作</th>
                     </tr>
@@ -61,6 +62,13 @@
                         </td>
                         <td><strong>{{ sale.total_kg|number }}</strong></td>
                         <td>
+                            {% if sale.total_amount > 0 %}
+                            <strong class="text-success">${{ sale.total_amount|number(2) }}</strong>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <span class="badge bg-{% if sale.status == 'active' %}success{% else %}secondary{% endif %}"
                                 data-i18n="{% if sale.status == 'active' %}common.active{% else %}common.void{% endif %}">
                                 {{ '有效' if sale.status == 'active' else '已作废' }}
@@ -74,7 +82,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="7" class="text-center text-muted">暂无数据</td>
+                        <td colspan="8" class="text-center text-muted">暂无数据</td>
                     </tr>
                     {% endfor %}
                 </tbody>
