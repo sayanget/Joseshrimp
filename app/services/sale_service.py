@@ -108,6 +108,10 @@ class SaleService:
             if item.unit_price:
                 item.total_amount = item.subtotal_kg * item.unit_price
         
+        # 计算销售单总金额
+        db.session.flush()
+        sale.total_amount = sum(item.total_amount for item in sale.items)
+        
         
         # 记录审计日志
         audit_log = AuditLog(
