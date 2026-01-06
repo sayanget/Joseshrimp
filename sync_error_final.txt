@@ -1,0 +1,30 @@
+﻿python : Traceback (most recent call last):
+At line:1 char:132
++ ... supabase.com:6543/postgres'; python si
+mple_sync_users.py 2>&1 | Out-F ...
++                                  ~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: 
+    (Traceback (most recent call last)::St  
+  ring) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommand 
+   Error
+ 
+  File "D:\project\jose\simple_sync_users.py
+", line 102, in <module>
+    simple_sync()
+    ~~~~~~~~~~~^^
+  File "D:\project\jose\simple_sync_users.py
+", line 7, in simple_sync
+    print("\u7b80\u5316\u7528\u6237\u540c\u6
+b65...")
+    ~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py
+", line 19, in encode
+    return codecs.charmap_encode(input,self.
+errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't en
+code characters in position 0-5: character m
+aps to <undefined>

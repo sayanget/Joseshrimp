@@ -56,6 +56,7 @@ const translations = {
         'common.no': '否',
         'common.confirm': '确认',
         'common.close': '关闭',
+        'common.export': '导出Excel',
 
         // 销售
         'sales.list': '销售单列表',
@@ -271,6 +272,7 @@ const translations = {
         'common.no': 'No',
         'common.confirm': 'Confirm',
         'common.close': 'Close',
+        'common.export': 'Export Excel',
 
         // Sales
         'sales.list': 'Sales List',
@@ -486,6 +488,7 @@ const translations = {
         'common.no': 'No',
         'common.confirm': 'Confirmar',
         'common.close': 'Cerrar',
+        'common.export': 'Exportar Excel',
 
         // Ventas
         'sales.list': 'Lista de Ventas',
