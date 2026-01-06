@@ -47,12 +47,22 @@
 
 <!-- 价格说明 -->
 <div class="alert alert-info">
-    <h6 class="alert-heading"><i class="bi bi-info-circle"></i> 说明</h6>
+    <h6 class="alert-heading"><i class="bi bi-info-circle"></i> 价格管理规则</h6>
     <ul class="mb-0">
-        <li>价格为全局统一设置，适用于所有规格和客户</li>
-        <li>现金价格：客户使用现金支付时的单价</li>
-        <li>信用价格：客户使用信用支付时的单价（考虑账期风险，通常略高）</li>
-        <li>修改价格后，仅影响新创建的订单，历史订单不受影响</li>
+        <li><strong>全局统一价格：</strong>价格为全局统一设置，适用于所有规格和客户</li>
+        <li><strong>现金价格：</strong>客户使用现金支付时的单价</li>
+        <li><strong>信用价格：</strong>客户使用信用支付时的单价（考虑账期风险，通常略高）</li>
+        <li><strong>⚠️ 重要：</strong>价格修改<strong>只影响新创建的订单</strong>，历史订单保持原价格不变</li>
+        <li><strong>价格快照：</strong>每个订单在创建时会保存当时的价格，确保历史数据准确性</li>
+    </ul>
+</div>
+
+<div class="alert alert-warning">
+    <h6 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> 修改前请注意</h6>
+    <ul class="mb-0">
+        <li>价格修改是全局性的，会影响所有新订单</li>
+        <li>建议在业务低峰期修改价格</li>
+        <li>修改前应通知相关业务人员</li>
     </ul>
 </div>
 {% endblock %}
