@@ -8,6 +8,67 @@ from sqlalchemy.orm import validates
 from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+class SystemConfig(db.Model):
+    """系统配置表"""
+    __tablename__ = 'system_config'
+    
+    key = db.Column(db.String(50), primary_key=True)
+    value = db.Column(db.Text, nullable=False)
+    description = db.Column(db.String(200))
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.String(50))
+    
+    @staticmethod
+    def get_value(key, default=None, value_type=str):
+        """获取配置值"""
+        config = SystemConfig.query.get(key)
+        if not config:
+            return default
+        
+        try:
+            if value_type == float:
+                return float(config.value)
+            elif value_type == int:
+                return int(config.value)
+            elif value_type == bool:
+                return config.value.lower() in ('true', '1', 'yes')
+            else:
+                return config.value
+        except:
+            return default
+    
+    @staticmethod
+    def set_value(key, value, description=None, updated_by=None):
+        """设置配置值"""
+        config = SystemConfig.query.get(key)
+        if config:
+            config.value = str(value)
+            if description:
+                config.description = description
+            if updated_by:
+                config.updated_by = updated_by
+            config.updated_at = datetime.utcnow()
+        else:
+            config = SystemConfig(
+                key=key,
+                value=str(value),
+                description=description,
+                updated_by=updated_by
+            )
+            db.session.add(config)
+        db.session.commit()
+        return config
+    
+    def to_dict(self):
+        return {
+            'key': self.key,
+            'value': self.value,
+            'description': self.description,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'updated_by': self.updated_by
+        }
+
+
 class Spec(db.Model):
     """规格表"""
     __tablename__ = 'spec'
@@ -17,8 +78,6 @@ class Spec(db.Model):
     length = db.Column(db.Integer, nullable=False)
     width = db.Column(db.Integer, nullable=False)
     kg_per_box = db.Column(db.Numeric(10, 3), nullable=False)
-    cash_price = db.Column(db.Numeric(10, 2), nullable=True)  # 现金价格（每KG）
-    credit_price = db.Column(db.Numeric(10, 2), nullable=True)  # 信用价格（每KG）
     active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
@@ -39,8 +98,6 @@ class Spec(db.Model):
             'length': self.length,
             'width': self.width,
             'kg_per_box': float(self.kg_per_box),
-            'cash_price': float(self.cash_price) if self.cash_price else None,
-            'credit_price': float(self.credit_price) if self.credit_price else None,
             'active': self.active
         }
     

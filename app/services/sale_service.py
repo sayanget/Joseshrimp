@@ -80,12 +80,17 @@ class SaleService:
             if not spec or not spec.active:
                 raise ValueError(f'规格ID {item_data["spec_id"]} 不存在或已禁用')
             
+            # 从系统配置获取全局价格
+            from app.models import SystemConfig
+            cash_price = SystemConfig.get_value('price_cash', value_type=float)
+            credit_price = SystemConfig.get_value('price_credit', value_type=float)
+            
             # 根据支付方式选择价格
             unit_price = None
-            if payment_type == '现金' and spec.cash_price:
-                unit_price = spec.cash_price
-            elif payment_type == 'Crédito' and spec.credit_price:
-                unit_price = spec.credit_price
+            if payment_type == '现金' and cash_price:
+                unit_price = Decimal(str(cash_price))
+            elif payment_type == 'Crédito' and credit_price:
+                unit_price = Decimal(str(credit_price))
             
             item = SaleItem(
                 sale_id=sale.id,

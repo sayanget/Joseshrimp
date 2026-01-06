@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="admin.system_settings">系统设置</span> - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-gear"></i> <span data-i18n="admin.system_settings">系统设置</span></h2>
+    </div>
+</div>
+
+<!-- 价格设置 -->
+<div class="card mb-3">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-currency-dollar"></i> <span data-i18n="admin.price_settings">价格设置</span></h5>
+    </div>
+    <div class="card-body">
+        <form id="priceForm">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        <i class="bi bi-cash-coin text-success"></i>
+                        <span data-i18n="admin.cash_price">现金价格</span> ($/KG)
+                    </label>
+                    <input type="number" id="priceCash" class="form-control" step="0.01"
+                        value="{{ configs|selectattr('key', 'equalto', 'price_cash')|map(attribute='value')|first or '0.50' }}"
+                        required>
+                    <div class="form-text">现金支付时使用的单价</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        <i class="bi bi-credit-card text-warning"></i>
+                        <span data-i18n="admin.credit_price">信用价格</span> ($/KG)
+                    </label>
+                    <input type="number" id="priceCredit" class="form-control" step="0.01"
+                        value="{{ configs|selectattr('key', 'equalto', 'price_credit')|map(attribute='value')|first or '0.55' }}"
+                        required>
+                    <div class="form-text">信用支付时使用的单价（通常高于现金价）</div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="savePrices()">
+                <i class="bi bi-save"></i> <span data-i18n="common.save">保存设置</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- 价格说明 -->
+<div class="alert alert-info">
+    <h6 class="alert-heading"><i class="bi bi-info-circle"></i> 说明</h6>
+    <ul class="mb-0">
+        <li>价格为全局统一设置，适用于所有规格和客户</li>
+        <li>现金价格：客户使用现金支付时的单价</li>
+        <li>信用价格：客户使用信用支付时的单价（考虑账期风险，通常略高）</li>
+        <li>修改价格后，仅影响新创建的订单，历史订单不受影响</li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function savePrices() {
+        const cashPrice = document.getElementById('priceCash').value;
+        const creditPrice = document.getElementById('priceCredit').value;
+
+        if (!cashPrice || !creditPrice) {
+            utils.showAlert('请填写所有价格', 'warning');
+            return;
+        }
+
+        if (parseFloat(cashPrice) <= 0 || parseFloat(creditPrice) <= 0) {
+            utils.showAlert('价格必须大于0', 'warning');
+            return;
+        }
+
+        try {
+            await utils.apiRequest('/api/admin/settings/prices', {
+                method: 'PUT',
+                body: JSON.stringify({
+                    price_cash: parseFloat(cashPrice),
+                    price_credit: parseFloat(creditPrice),
+                    updated_by: 'admin'
+                })
+            });
+
+            utils.showAlert('价格设置已保存！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+</script>
+{% endblock %}

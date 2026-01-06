@@ -128,6 +128,39 @@ def update_spec_prices(spec_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# ==================== 系统设置 ====================
+
+@admin_api.route('/settings/prices', methods=['PUT'])
+def update_system_prices():
+    """更新系统价格设置"""
+    try:
+        from app.models import SystemConfig
+        data = request.get_json()
+        
+        updated_by = data.get('updated_by', 'admin')
+        
+        if 'price_cash' in data:
+            SystemConfig.set_value(
+                'price_cash',
+                data['price_cash'],
+                description='现金支付价格 ($/KG)',
+                updated_by=updated_by
+            )
+        
+        if 'price_credit' in data:
+            SystemConfig.set_value(
+                'price_credit',
+                data['price_credit'],
+                description='信用支付价格 ($/KG)',
+                updated_by=updated_by
+            )
+        
+        return jsonify({'message': 'Prices updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 
 # ==================== 客户管理 ====================
 

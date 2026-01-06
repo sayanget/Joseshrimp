@@ -34,6 +34,14 @@ def manage_prices():
     specs = Spec.query.order_by(Spec.name).all()
     return render_template('admin/prices.html', specs=specs)
 
+@admin_bp.route('/settings')
+def system_settings():
+    """系统设置"""
+    from app.models import SystemConfig
+    configs = SystemConfig.query.all()
+    return render_template('admin/settings.html', configs=configs)
+
+
 
 @admin_bp.route('/audit')
 def audit_logs():
