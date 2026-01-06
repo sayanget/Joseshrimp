@@ -87,6 +87,11 @@
                                         data-i18n="nav.specs">规格管理</span></a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.manage_customers') }}"><span
                                         data-i18n="nav.customers">客户管理</span></a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.system_settings') }}"><span
+                                        data-i18n="admin.system_settings">系统设置</span></a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.audit_logs') }}"><span
                                         data-i18n="nav.audit">审计日志</span></a></li>
                         </ul>
