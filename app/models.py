@@ -17,6 +17,8 @@ class Spec(db.Model):
     length = db.Column(db.Integer, nullable=False)
     width = db.Column(db.Integer, nullable=False)
     kg_per_box = db.Column(db.Numeric(10, 3), nullable=False)
+    cash_price = db.Column(db.Numeric(10, 2), nullable=True)  # 现金价格（每KG）
+    credit_price = db.Column(db.Numeric(10, 2), nullable=True)  # 信用价格（每KG）
     active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
@@ -37,6 +39,8 @@ class Spec(db.Model):
             'length': self.length,
             'width': self.width,
             'kg_per_box': float(self.kg_per_box),
+            'cash_price': float(self.cash_price) if self.cash_price else None,
+            'credit_price': float(self.credit_price) if self.credit_price else None,
             'active': self.active
         }
     
@@ -81,6 +85,7 @@ class Sale(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
     payment_type = db.Column(db.String(20), nullable=False)
     total_kg = db.Column(db.Numeric(12, 3), default=0, nullable=False)
+    total_amount = db.Column(db.Numeric(12, 2), default=0, nullable=False)  # 总金额
     status = db.Column(db.String(20), default='active', nullable=False)
     void_reason = db.Column(db.Text)
     void_time = db.Column(db.DateTime)
@@ -108,6 +113,7 @@ class Sale(db.Model):
             'customer': self.customer.to_dict() if self.customer else None,
             'payment_type': self.payment_type,
             'total_kg': float(self.total_kg),
+            'total_amount': float(self.total_amount),
             'status': self.status,
             'created_by': self.created_by,
             'created_at': self.created_at.isoformat() if self.created_at else None
@@ -134,6 +140,8 @@ class SaleItem(db.Model):
     box_qty = db.Column(db.Integer, default=0, nullable=False)
     extra_kg = db.Column(db.Numeric(10, 3), default=0, nullable=False)
     subtotal_kg = db.Column(db.Numeric(12, 3), default=0, nullable=False)
+    unit_price = db.Column(db.Numeric(10, 2), nullable=True)  # 单价（每KG）
+    total_amount = db.Column(db.Numeric(12, 2), default=0, nullable=False)  # 小计金额
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     
     __table_args__ = (
@@ -152,7 +160,9 @@ class SaleItem(db.Model):
             'spec': self.spec.to_dict() if self.spec else None,
             'box_qty': self.box_qty,
             'extra_kg': float(self.extra_kg),
-            'subtotal_kg': float(self.subtotal_kg)
+            'subtotal_kg': float(self.subtotal_kg),
+            'unit_price': float(self.unit_price) if self.unit_price else None,
+            'total_amount': float(self.total_amount)
         }
     
     def __repr__(self):

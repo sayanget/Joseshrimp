@@ -80,13 +80,29 @@ class SaleService:
             if not spec or not spec.active:
                 raise ValueError(f'规格ID {item_data["spec_id"]} 不存在或已禁用')
             
+            # 根据支付方式选择价格
+            unit_price = None
+            if payment_type == '现金' and spec.cash_price:
+                unit_price = spec.cash_price
+            elif payment_type == 'Crédito' and spec.credit_price:
+                unit_price = spec.credit_price
+            
             item = SaleItem(
                 sale_id=sale.id,
                 spec_id=item_data['spec_id'],
                 box_qty=item_data.get('box_qty', 0),
-                extra_kg=Decimal(str(item_data.get('extra_kg', 0)))
+                extra_kg=Decimal(str(item_data.get('extra_kg', 0))),
+                unit_price=unit_price
             )
             db.session.add(item)
+            
+            # 刷新以获取触发器计算的subtotal_kg
+            db.session.flush()
+            
+            # 计算金额（如果有单价）
+            if item.unit_price:
+                item.total_amount = item.subtotal_kg * item.unit_price
+        
         
         # 记录审计日志
         audit_log = AuditLog(
