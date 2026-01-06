@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Daily Sales Detail') }} - {{ date.strftime('%Y-%m-%d') }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-calendar-day"></i> <span data-i18n="sales.daily_detail">每日销售详情</span></h2>
+        <p class="text-muted">{{ date.strftime('%Y-%m-%d') }}</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('reports.statistics') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> <span data-i18n="common.back">返回</span>
+        </a>
+    </div>
+</div>
+
+<!-- 汇总卡片 -->
+<div class="row mb-3">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted" data-i18n="sales.total_orders">总订单数</h6>
+                <h3 class="card-title">{{ sales|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted" data-i18n="sales.total_weight">总重量(KG)</h6>
+                <h3 class="card-title">{{ sales|sum(attribute='total_kg')|number }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2" data-i18n="sales.cash">现金</h6>
+                <h3 class="card-title">{{ sales|selectattr('payment_type', 'equalto',
+                    '现金')|sum(attribute='total_kg')|number }} KG</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2" data-i18n="sales.credit">信用</h6>
+                <h3 class="card-title">{{ sales|selectattr('payment_type', 'equalto',
+                    'Crédito')|sum(attribute='total_kg')|number }} KG</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 销售记录列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th data-i18n="sales.sale_id">单号</th>
+                        <th data-i18n="sales.sale_time">时间</th>
+                        <th data-i18n="sales.customer">客户</th>
+                        <th data-i18n="sales.payment_type">支付方式</th>
+                        <th data-i18n="sales.total_weight">重量(KG)</th>
+                        <th data-i18n="common.actions">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in sales %}
+                    <tr>
+                        <td><code>{{ sale.id }}</code></td>
+                        <td>{{ sale.sale_time.strftime('%H:%M:%S') }}</td>
+                        <td>{{ sale.customer.name }}</td>
+                        <td>
+                            <span class="badge bg-{% if sale.payment_type == '现金' %}success{% else %}warning{% endif %}"
+                                data-i18n="{% if sale.payment_type == '现金' %}sales.cash{% else %}sales.credit{% endif %}">
+                                {{ sale.payment_type }}
+                            </span>
+                        </td>
+                        <td><strong>{{ sale.total_kg|number }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('sales.view_sale', sale_id=sale.id) }}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> <span data-i18n="common.view">查看</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted" data-i18n="common.no_data">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

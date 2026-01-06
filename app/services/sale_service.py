@@ -238,3 +238,29 @@ class SaleService:
             'cash_kg': float(result.cash_kg or 0),
             'credit_kg': float(result.credit_kg or 0)
         }
+    
+    @staticmethod
+    def get_sales_by_date(sale_date):
+        """
+        获取指定日期的所有销售记录
+        
+        Args:
+            sale_date: 销售日期 (date对象)
+            
+        Returns:
+            list: 销售记录列表
+        """
+        from datetime import datetime, timedelta
+        
+        # 设置日期范围（当天00:00:00到23:59:59）
+        start_datetime = datetime.combine(sale_date, datetime.min.time())
+        end_datetime = datetime.combine(sale_date, datetime.max.time())
+        
+        sales = Sale.query.filter(
+            Sale.sale_time >= start_datetime,
+            Sale.sale_time <= end_datetime,
+            Sale.status == 'active'
+        ).order_by(Sale.sale_time.desc()).all()
+        
+        return sales
+

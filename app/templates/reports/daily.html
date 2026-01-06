@@ -123,7 +123,7 @@
 
         tbody.innerHTML = data.map(row => `
         <tr>
-            <td>${row.date}</td>
+            <td><a href="/sales/daily/${row.date}" class="text-decoration-none"><strong>${row.date}</strong></a></td>
             <td>${row.order_count}</td>
             <td><strong>${utils.formatNumber(row.total_kg)}</strong></td>
             <td class="text-success">${utils.formatNumber(row.cash_kg)}</td>
