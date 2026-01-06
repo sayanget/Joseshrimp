@@ -54,16 +54,9 @@ class ProductionConfig(Config):
         
         # 日志配置
         import logging
-        from logging.handlers import RotatingFileHandler
+        import sys
         
-        if not os.path.exists('logs'):
-            os.mkdir('logs')
-        
-        file_handler = RotatingFileHandler(
-            'logs/sales_app.log',
-            maxBytes=10240000,
-            backupCount=10
-        )
+        file_handler = logging.StreamHandler(sys.stdout)
         file_handler.setFormatter(logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
         ))
