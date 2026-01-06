@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="admin.price_management">价格管理</span> - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-currency-dollar"></i> <span data-i18n="admin.price_management">价格管理</span></h2>
+    </div>
+</div>
+
+<!-- 价格列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th data-i18n="admin.spec_name">规格名称</th>
+                        <th data-i18n="admin.cash_price">现金价($/KG)</th>
+                        <th data-i18n="admin.credit_price">信用价($/KG)</th>
+                        <th data-i18n="common.status">状态</th>
+                        <th data-i18n="common.actions">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for spec in specs %}
+                    <tr class="{% if not spec.active %}table-secondary{% endif %}">
+                        <td>{{ spec.id }}</td>
+                        <td><strong>{{ spec.name }}</strong></td>
+                        <td>
+                            {% if spec.cash_price %}
+                            <span class="badge bg-success">${{ spec.cash_price|number(2) }}</span>
+                            {% else %}
+                            <span class="text-muted">未设置</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if spec.credit_price %}
+                            <span class="badge bg-warning">${{ spec.credit_price|number(2) }}</span>
+                            {% else %}
+                            <span class="text-muted">未设置</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if spec.active %}success{% else %}secondary{% endif %}"
+                                data-i18n="{% if spec.active %}common.enabled{% else %}common.disabled{% endif %}">
+                                {{ '启用' if spec.active else '禁用' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary"
+                                onclick="editPrice({{ spec.id }}, '{{ spec.name }}', {{ spec.cash_price or 'null' }}, {{ spec.credit_price or 'null' }})">
+                                <i class="bi bi-pencil"></i> <span data-i18n="admin.set_price">设置价格</span>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑价格模态框 -->
+<div class="modal fade" id="editPriceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">设置价格 - <span id="modalSpecName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editPriceForm">
+                    <input type="hidden" id="editSpecId">
+                    <div class="mb-3">
+                        <label class="form-label">现金价格 ($/KG)</label>
+                        <input type="number" id="editCashPrice" class="form-control" step="0.01" placeholder="0.00">
+                        <div class="form-text">现金支付时使用的单价</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">信用价格 ($/KG)</label>
+                        <input type="number" id="editCreditPrice" class="form-control" step="0.01" placeholder="0.00">
+                        <div class="form-text">信用支付时使用的单价</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <span data-i18n="common.cancel">取消</span>
+                </button>
+                <button type="button" class="btn btn-primary" onclick="updatePrice()">
+                    <span data-i18n="common.save">保存</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function editPrice(id, name, cashPrice, creditPrice) {
+        document.getElementById('editSpecId').value = id;
+        document.getElementById('modalSpecName').textContent = name;
+        document.getElementById('editCashPrice').value = cashPrice || '';
+        document.getElementById('editCreditPrice').value = creditPrice || '';
+        new bootstrap.Modal(document.getElementById('editPriceModal')).show();
+    }
+
+    async function updatePrice() {
+        const id = document.getElementById('editSpecId').value;
+        const cashPrice = document.getElementById('editCashPrice').value;
+        const creditPrice = document.getElementById('editCreditPrice').value;
+
+        try {
+            await utils.apiRequest(`/api/admin/specs/${id}/prices`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    cash_price: cashPrice ? parseFloat(cashPrice) : null,
+                    credit_price: creditPrice ? parseFloat(creditPrice) : null,
+                    updated_by: 'admin'
+                })
+            });
+
+            utils.showAlert('价格更新成功！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+</script>
+{% endblock %}

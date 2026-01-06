@@ -28,6 +28,13 @@ def manage_customers():
     customers = Customer.query.order_by(Customer.name).all()
     return render_template('admin/customers.html', customers=customers)
 
+@admin_bp.route('/prices')
+def manage_prices():
+    """价格管理"""
+    specs = Spec.query.order_by(Spec.name).all()
+    return render_template('admin/prices.html', specs=specs)
+
+
 @admin_bp.route('/audit')
 def audit_logs():
     """审计日志"""

@@ -103,6 +103,32 @@ def deactivate_spec(spec_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+@admin_api.route('/specs/<int:spec_id>/prices', methods=['PUT'])
+def update_spec_prices(spec_id):
+    """更新规格价格"""
+    try:
+        spec = Spec.query.get(spec_id)
+        if not spec:
+            return jsonify({'error': '规格不存在'}), 404
+        
+        data = request.get_json()
+        
+        if 'cash_price' in data:
+            spec.cash_price = data['cash_price']
+        if 'credit_price' in data:
+            spec.credit_price = data['credit_price']
+        if 'updated_by' in data:
+            spec.updated_by = data['updated_by']
+        
+        spec.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify(spec.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 # ==================== 客户管理 ====================
 
 @admin_api.route('/customers', methods=['GET'])
