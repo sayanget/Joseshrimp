@@ -54,7 +54,6 @@ def view_sale(sale_id):
 def daily_sales(date):
     """查看指定日期的所有销售记录"""
     from flask import redirect, url_for
-    from datetime import datetime
     
     try:
         # 验证日期格式
@@ -66,7 +65,12 @@ def daily_sales(date):
         return render_template('sales/daily_detail.html',
                              sales=sales,
                              date=sale_date)
-    except ValueError:
+    except ValueError as e:
         flash('Invalid date format', 'error')
-        return redirect(url_for('reports.statistics'))
+        return redirect(url_for('reports.daily_sales'))
+    except Exception as e:
+        flash(f'Error loading sales data: {str(e)}', 'error')
+        return redirect(url_for('reports.daily_sales'))
+
+
 
