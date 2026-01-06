@@ -1,11 +1,20 @@
 """
 报表统计视图
 """
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, jsonify
+from flask_login import login_required
 from app.services.report_service import ReportService
 from datetime import datetime, timedelta
+from app.utils.decorators import permission_required
 
 reports_bp = Blueprint('reports', __name__)
+
+@reports_bp.before_request
+@login_required
+@permission_required('view_reports')
+def before_request():
+    """Protect all reports routes"""
+    pass
 
 @reports_bp.route('/')
 def index():

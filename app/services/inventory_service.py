@@ -2,7 +2,7 @@
 库存业务逻辑服务
 """
 from app import db
-from app.models import StockMove
+from app.models import StockMove, InventoryCheck
 from datetime import datetime, timedelta
 from sqlalchemy import func
 
@@ -170,3 +170,58 @@ class InventoryService:
             }
             for row in result
         ]
+    
+    @staticmethod
+    def process_inventory_check(actual_kg, notes, created_by):
+        """
+        处理库存盘点
+        
+        Args:
+            actual_kg: 实际库存
+            notes: 备注
+            created_by: 创建人
+            
+        Returns:
+            InventoryCheck: 盘点记录对象
+        """
+        current_data = InventoryService.get_current_stock()
+        theoretical_kg = current_data['current_stock_kg']
+        difference = actual_kg - theoretical_kg
+        
+        # 创建盘点记录
+        check = InventoryCheck(
+            check_time=datetime.now(),
+            actual_kg=actual_kg,
+            theoretical_kg=theoretical_kg,
+            difference_kg=difference,
+            notes=notes,
+            created_by=created_by
+        )
+        db.session.add(check)
+        
+        # 如果有差异，创建调整库存变动
+        if difference != 0:
+            move_type = '盘盈' if difference > 0 else '盘亏'
+            
+            # 使用add_stock_move方法，它会自动处理已存在的session
+            # 注意：add_stock_move会commit，所以上面的check必须先被add到session中
+            # 但是add_stock_move内也会add move到session
+            # 由于add_stock_move最后commit，所以check也会被一起commit
+            
+            # 我们需要先flush check以获取ID（如果需要引用ID）
+            # 但是当前add_stock_move调用时check还没commit，ID可能为空（除非auto-flush）
+            db.session.flush()
+            
+            InventoryService.add_stock_move(
+                move_type=move_type,
+                source='盘点差异调整',
+                kg=difference,
+                notes=f"盘点自动调整 (单号: {check.id})",
+                created_by=created_by
+            )
+            
+        # add_stock_move已经commit了，如果没有差异则需要手动commit
+        if difference == 0:
+            db.session.commit()
+            
+        return check

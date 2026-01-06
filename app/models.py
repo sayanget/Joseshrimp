@@ -5,6 +5,8 @@ from app import db
 from datetime import datetime
 from sqlalchemy import CheckConstraint, event
 from sqlalchemy.orm import validates
+from flask_login import UserMixin, AnonymousUserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class Spec(db.Model):
     """规格表"""
@@ -265,6 +267,87 @@ class InventoryCheck(db.Model):
     
     def __repr__(self):
         return f'<InventoryCheck {self.id}>'
+
+
+# ==================== 权限管理模型 ====================
+
+roles_permissions = db.Table('roles_permissions',
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True),
+    db.Column('permission_id', db.Integer, db.ForeignKey('permission.id'), primary_key=True)
+)
+
+class Permission(db.Model):
+    """权限表"""
+    __tablename__ = 'permission'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.String(200))
+    
+    def __repr__(self):
+        return f'<Permission {self.name}>'
+
+class Role(db.Model):
+    """角色表"""
+    __tablename__ = 'role'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    description = db.Column(db.String(200))
+    permissions = db.relationship('Permission', secondary=roles_permissions,
+                                backref=db.backref('roles', lazy='dynamic'))
+    
+    def has_permission(self, perm_name):
+        """检查角色是否有指定权限"""
+        for perm in self.permissions:
+            if perm.name == perm_name:
+                return True
+        return False
+        
+    def __repr__(self):
+        return f'<Role {self.name}>'
+
+class User(UserMixin, db.Model):
+    """用户表"""
+    __tablename__ = 'user'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, index=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    role = db.relationship('Role', backref='users')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    last_login = db.Column(db.DateTime)
+    
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+        
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+        
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+        
+    def can(self, perm_name):
+        return self.role is not None and self.role.has_permission(perm_name)
+    
+    def is_admin(self):
+        return self.can('admin')
+        
+    def __repr__(self):
+        return f'<User {self.username}>'
+
+class AnonymousUser(AnonymousUserMixin):
+    def can(self, permissions):
+        return False
+    
+    def is_admin(self):
+        return False
+
+
 
 
 # ==================== SQLAlchemy事件监听器（模拟触发器） ====================

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}角色管理 - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h4><i class="bi bi-shield-lock"></i> <span data-i18n="admin.roles_management">角色管理</span></h4>
+    </div>
+    <div class="col-md-6 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+            <i class="bi bi-plus-lg"></i> <span data-i18n="admin.add_role">添加角色</span>
+        </button>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th data-i18n="admin.role_name">角色名称</th>
+                        <th data-i18n="admin.permissions">权限</th>
+                        <th data-i18n="common.actions">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for role in roles %}
+                    <tr>
+                        <td>{{ role.name }}</td>
+                        <td>
+                            {% for perm in role.permissions %}
+                            <span class="badge bg-info text-dark" data-i18n="admin.permission_{{ perm.name }}">{{
+                                perm.name }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                data-bs-target="#editRoleModal{{ role.id }}">
+                                <i class="bi bi-pencil"></i> <span data-i18n="common.edit">编辑</span>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Edit Role Modal -->
+                    <div class="modal fade" id="editRoleModal{{ role.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form action="{{ url_for('admin.edit_role', role_id=role.id) }}" method="POST">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" data-i18n="admin.edit_role">编辑角色</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label" data-i18n="admin.role_name">角色名称</label>
+                                            <input type="text" class="form-control" value="{{ role.name }}" disabled>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label" data-i18n="admin.permissions">权限配置</label>
+                                            <div class="border rounded p-3">
+                                                {% for perm in permissions %}
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="permissions"
+                                                        value="{{ perm.id }}" id="edit_perm_{{ role.id }}_{{ perm.id }}"
+                                                        {% if role.has_permission(perm.name) %}checked{% endif %}>
+                                                    <label class="form-check-label"
+                                                        for="edit_perm_{{ role.id }}_{{ perm.id }}"
+                                                        data-i18n="admin.permission_{{ perm.name }}">
+                                                        {{ perm.name }}
+                                                    </label>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                            data-i18n="common.cancel">取消</button>
+                                        <button type="submit" class="btn btn-primary"
+                                            data-i18n="common.save">保存</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Role Modal -->
+<div class="modal fade" id="addRoleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('admin.add_role') }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-i18n="admin.add_role">添加角色</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="admin.role_name">角色名称</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="admin.permissions">权限配置</label>
+                        <div class="border rounded p-3">
+                            {% for perm in permissions %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="permissions" value="{{ perm.id }}"
+                                    id="add_perm_{{ perm.id }}">
+                                <label class="form-check-label" for="add_perm_{{ perm.id }}"
+                                    data-i18n="admin.permission_{{ perm.name }}">
+                                    {{ perm.name }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        data-i18n="common.cancel">取消</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="common.submit">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

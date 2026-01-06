@@ -12,6 +12,14 @@ const translations = {
         'nav.audit': '审计日志',
 
         // 首页
+        'auth.login_title': '系统登录',
+        'auth.username': '用户名',
+        'auth.password': '密码',
+        'auth.remember_me': '记住我',
+        'auth.button': '登录',
+        'auth.restricted': '仅授权人员访问',
+        'auth.logout': '退出登录',
+
         'home.title': '系统概览',
         'home.orders_today': '今日订单',
         'home.sales_today': '今日销售',
@@ -37,8 +45,8 @@ const translations = {
         'common.active': '有效',
         'common.void': '已作废',
         'common.status': '状态',
-        'common.system_name': '销售管理系统',
-        'common.footer': '© 2026 销售管理系统 | 严格遵循业务规则：禁止自由输入、自动计算、可追溯、禁止删除',
+        'common.system_name': 'Comercializadora de Camarón Lizfer',
+        'common.footer': '© 2026 Comercializadora de Camarón Lizfer | 严格遵循业务规则：禁止自由输入、自动计算、可追溯、禁止删除',
         'common.actions': '操作',
         'common.kg': 'KG',
         'common.pieces': '笔',
@@ -115,7 +123,7 @@ const translations = {
         'inventory.submit_check': '提交盘点记录',
         'inventory.enter_actual': '请输入实际库存',
         'inventory.confirm_submit': '确认提交盘点记录？',
-        'inventory.check_submitted': '盘点记录已提交（演示模式）',
+        'inventory.check_submitted': '盘点记录已提交',
 
         // 报表
         'reports.daily': '按日期统计',
@@ -178,7 +186,23 @@ const translations = {
         'admin.created_time': '创建时间',
         'admin.add_spec': '添加规格',
         'admin.add_customer': '添加客户',
-        'admin.deactivate': '禁用'
+        'admin.deactivate': '禁用',
+        'admin.users': '用户管理',
+        'admin.role': '角色',
+        'admin.last_login': '最后登录',
+        'admin.add_user': '添加用户',
+        'admin.edit_user': '编辑用户',
+        'admin.password': '密码',
+        'admin.password_hint': '如果不修改密码请留空',
+        'admin.roles_management': '角色管理',
+        'admin.add_role': '添加角色',
+        'admin.edit_role': '编辑角色',
+        'admin.permissions': '权限配置',
+        'admin.role_name': '角色名称',
+        'admin.permission_view_sales': '查看销售',
+        'admin.permission_view_inventory': '查看库存',
+        'admin.permission_view_reports': '查看报表',
+        'admin.permission_admin': '系统管理'
     },
 
     en: {
@@ -193,6 +217,14 @@ const translations = {
         'nav.audit': 'Audit Log',
 
         // Home
+        'auth.login_title': 'System Login',
+        'auth.username': 'Username',
+        'auth.password': 'Password',
+        'auth.remember_me': 'Remember Me',
+        'auth.button': 'Login',
+        'auth.restricted': 'Authorized Personnel Only',
+        'auth.logout': 'Logout',
+
         'home.title': 'System Overview',
         'home.orders_today': 'Orders Today',
         'home.sales_today': 'Sales Today',
@@ -218,8 +250,8 @@ const translations = {
         'common.active': 'Active',
         'common.void': 'Void',
         'common.status': 'Status',
-        'common.system_name': 'Sales Management System',
-        'common.footer': '© 2026 Sales Management System | Strict Business Rules: No Free Input, Auto-calculation, Traceable, No Deletion',
+        'common.system_name': 'Comercializadora de Camarón Lizfer',
+        'common.footer': '© 2026 Comercializadora de Camarón Lizfer. All rights reserved. | Strict Business Rules: No Free Input, Auto-calculation, Traceable, No Deletion',
         'common.actions': 'Actions',
         'common.kg': 'KG',
         'common.pieces': 'pcs',
@@ -296,7 +328,7 @@ const translations = {
         'inventory.submit_check': 'Submit Check Record',
         'inventory.enter_actual': 'Please enter actual stock',
         'inventory.confirm_submit': 'Confirm submission of check record?',
-        'inventory.check_submitted': 'Check record submitted (demo mode)',
+        'inventory.check_submitted': 'Inventory Check Submitted',
 
         // Reports
         'reports.daily': 'Daily Sales',
@@ -359,7 +391,23 @@ const translations = {
         'admin.created_time': 'Created Time',
         'admin.add_spec': 'Add Specification',
         'admin.add_customer': 'Add Customer',
-        'admin.deactivate': 'Deactivate'
+        'admin.deactivate': 'Deactivate',
+        'admin.users': 'User Management',
+        'admin.role': 'Role',
+        'admin.last_login': 'Last Login',
+        'admin.add_user': 'Add User',
+        'admin.edit_user': 'Edit User',
+        'admin.password': 'Password',
+        'admin.password_hint': 'Leave blank to keep unchanged',
+        'admin.roles_management': 'Role Management',
+        'admin.add_role': 'Add Role',
+        'admin.edit_role': 'Edit Role',
+        'admin.permissions': 'Permissions',
+        'admin.role_name': 'Role Name',
+        'admin.permission_view_sales': 'View Sales',
+        'admin.permission_view_inventory': 'View Inventory',
+        'admin.permission_view_reports': 'View Reports',
+        'admin.permission_admin': 'System Administration'
     },
 
     es: {
@@ -374,6 +422,14 @@ const translations = {
         'nav.audit': 'Registro de Auditoría',
 
         // Inicio
+        'auth.login_title': 'Inicio de Sesión',
+        'auth.username': 'Usuario',
+        'auth.password': 'Contraseña',
+        'auth.remember_me': 'Recuérdame',
+        'auth.button': 'Iniciar Sesión',
+        'auth.restricted': 'Solo Personal Autorizado',
+        'auth.logout': 'Cerrar Sesión',
+
         'home.title': 'Resumen del Sistema',
         'home.orders_today': 'Pedidos Hoy',
         'home.sales_today': 'Ventas Hoy',
@@ -399,8 +455,8 @@ const translations = {
         'common.active': 'Activo',
         'common.void': 'Anulado',
         'common.status': 'Estado',
-        'common.system_name': 'Sistema de Gestión de Ventas',
-        'common.footer': '© 2026 Sistema de Gestión de Ventas | Reglas Estrictas: Sin Entrada Libre, Cálculo Automático, Rastreable, Sin Eliminación',
+        'common.system_name': 'Comercializadora de Camarón Lizfer',
+        'common.footer': '© 2026 Comercializadora de Camarón Lizfer. Todos los derechos reservados. | Reglas Estrictas: Sin Entrada Libre, Cálculo Automático, Rastreable, Sin Eliminación',
         'common.actions': 'Acciones',
         'common.kg': 'KG',
         'common.pieces': 'pzs',
@@ -433,7 +489,7 @@ const translations = {
         'sales.subtotal': 'Subtotal (KG)',
         'sales.add_item': 'Agregar Artículo',
         'sales.void_reason': 'Razón de Anulación',
-        'sales.void_confirm': 'Confirmar Anulación',
+        'sales.void_confirm': '¿Confirmar Anulación?',
         'sales.basic_info': 'Información Básica',
         'sales.total': 'Total',
         'sales.created_by': 'Creado Por',
@@ -458,7 +514,7 @@ const translations = {
         'inventory.submit_check': 'Enviar Registro de Verificación',
         'inventory.enter_actual': 'Por favor ingrese el stock real',
         'inventory.confirm_submit': '¿Confirmar envío del registro de verificación?',
-        'inventory.check_submitted': 'Registro de verificación enviado (modo demo)',
+        'inventory.check_submitted': 'Control de Inventario Enviado',
         'inventory.add_move': 'Agregar Movimiento',
         'inventory.move_type': 'Tipo de Movimiento',
         'inventory.source': 'Origen/Destino',
@@ -540,7 +596,23 @@ const translations = {
         'admin.created_time': 'Hora de Creación',
         'admin.add_spec': 'Agregar Especificación',
         'admin.add_customer': 'Agregar Cliente',
-        'admin.deactivate': 'Desactivar'
+        'admin.deactivate': 'Desactivar',
+        'admin.users': 'Gestión de Usuarios',
+        'admin.role': 'Rol',
+        'admin.last_login': 'Último Acceso',
+        'admin.add_user': 'Agregar Usuario',
+        'admin.edit_user': 'Editar Usuario',
+        'admin.password': 'Contraseña',
+        'admin.password_hint': 'Dejar en blanco para mantener sin cambios',
+        'admin.roles_management': 'Gestión de Roles',
+        'admin.add_role': 'Agregar Rol',
+        'admin.edit_role': 'Editar Rol',
+        'admin.permissions': 'Permisos',
+        'admin.role_name': 'Nombre del Rol',
+        'admin.permission_view_sales': 'Ver Ventas',
+        'admin.permission_view_inventory': 'Ver Inventario',
+        'admin.permission_view_reports': 'Ver Reportes',
+        'admin.permission_admin': 'Administración del Sistema'
     }
 };
 

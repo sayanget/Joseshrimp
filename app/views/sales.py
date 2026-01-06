@@ -1,12 +1,22 @@
 """
 销售管理视图
 """
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, jsonify, flash
+from flask_login import login_required
 from app.services.sale_service import SaleService
 from app.models import Customer, Spec
 from datetime import datetime
 
+from app.utils.decorators import permission_required
+
 sales_bp = Blueprint('sales', __name__)
+
+@sales_bp.before_request
+@login_required
+@permission_required('view_sales')
+def before_request():
+    """Protect all sales routes"""
+    pass
 
 @sales_bp.route('/')
 def list_sales():

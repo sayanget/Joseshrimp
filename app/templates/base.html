@@ -20,19 +20,22 @@
     <!-- 导航栏 -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="bi bi-box-seam"></i> <span data-i18n="common.system_name">销售管理系统</span>
+            <a class="navbar-brand company-brand" href="{{ url_for('main.index') }}">
+                <i class="bi bi-shrimp"></i> <span data-i18n="common.system_name">Comercializadora de Camarón
+                    Lizfer</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
+                    {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('main.index') }}">
                             <i class="bi bi-house"></i> <span data-i18n="nav.home">首页</span>
                         </a>
                     </li>
+                    {% if current_user.can('view_sales') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <i class="bi bi-cart"></i> <span data-i18n="nav.sales">销售管理</span>
@@ -44,6 +47,8 @@
                                         data-i18n="sales.create">创建销售单</span></a></li>
                         </ul>
                     </li>
+                    {% endif %}
+                    {% if current_user.can('view_inventory') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <i class="bi bi-box"></i> <span data-i18n="nav.inventory">库存管理</span>
@@ -57,16 +62,27 @@
                                         data-i18n="inventory.check">库存盘点</span></a></li>
                         </ul>
                     </li>
+                    {% endif %}
+                    {% if current_user.can('view_reports') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('reports.index') }}">
                             <i class="bi bi-graph-up"></i> <span data-i18n="nav.reports">报表统计</span>
                         </a>
                     </li>
+                    {% endif %}
+                    {% if current_user.can('admin') %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <i class="bi bi-gear"></i> <span data-i18n="nav.admin">系统管理</span>
                         </a>
                         <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_users') }}"><span
+                                        data-i18n="admin.users">用户管理</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manage_roles') }}"><span
+                                        data-i18n="admin.roles_management">角色管理</span></a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.manage_specs') }}"><span
                                         data-i18n="nav.specs">规格管理</span></a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.manage_customers') }}"><span
@@ -75,6 +91,8 @@
                                         data-i18n="nav.audit">审计日志</span></a></li>
                         </ul>
                     </li>
+                    {% endif %}
+                    {% endif %}
                 </ul>
                 <div class="d-flex align-items-center">
                     <!-- 语言切换 -->
@@ -102,9 +120,18 @@
                             </li>
                         </ul>
                     </div>
-                    <span class="navbar-text text-white">
-                        <i class="bi bi-person-circle"></i> Jose Burgueno
+                    {% if current_user.is_authenticated %}
+                    <span class="navbar-text text-white me-3">
+                        <i class="bi bi-person-circle"></i> {{ current_user.username }}
                     </span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-box-arrow-right"></i> <span data-i18n="auth.logout">退出登录</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-box-arrow-in-right"></i> <span data-i18n="auth.button">登录</span>
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

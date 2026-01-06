@@ -106,22 +106,42 @@
         const actualKg = parseFloat(document.getElementById('actualKg').value);
         const notes = document.getElementById('notes').value;
 
-        if (!actualKg && actualKg !== 0) {
+        if (isNaN(actualKg)) {
             utils.showAlert(i18n.t('inventory.enter_actual'), 'danger');
             return;
         }
 
         const difference = actualKg - theoreticalKg;
 
-        // 这里应该调用API保存盘点记录
-        // 由于后端API还未完全实现，暂时只显示确认
         const confirmMsg = `${i18n.t('inventory.confirm_submit')}\n${i18n.t('inventory.theoretical')}: ${theoreticalKg.toFixed(3)} KG\n${i18n.t('inventory.actual_stock')}: ${actualKg.toFixed(3)} KG\n${i18n.t('inventory.difference')}: ${difference.toFixed(3)} KG`;
 
         if (confirm(confirmMsg)) {
-            utils.showAlert(i18n.t('inventory.check_submitted'), 'success');
-            setTimeout(() => {
-                window.location.href = '{{ url_for("inventory.current_stock") }}';
-            }, 1500);
+            try {
+                const response = await fetch('{{ url_for("inventory.inventory_check") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        actual_kg: actualKg,
+                        notes: notes
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    utils.showAlert(i18n.t('inventory.check_submitted'), 'success');
+                    setTimeout(() => {
+                        window.location.href = '{{ url_for("inventory.current_stock") }}';
+                    }, 1500);
+                } else {
+                    utils.showAlert(result.message || 'Error', 'danger');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                utils.showAlert(i18n.t('common.error'), 'danger');
+            }
         }
     });
 </script>
