@@ -34,17 +34,29 @@ class ExcelExporter:
     @staticmethod
     def auto_adjust_column_width(ws):
         """自动调整列宽"""
+        from openpyxl.cell.cell import MergedCell
+        
         for column in ws.columns:
             max_length = 0
-            column_letter = column[0].column_letter
+            column_letter = None
+            
             for cell in column:
+                # 跳过合并单元格
+                if isinstance(cell, MergedCell):
+                    continue
+                    
+                if column_letter is None:
+                    column_letter = cell.column_letter
+                    
                 try:
                     if len(str(cell.value)) > max_length:
                         max_length = len(str(cell.value))
                 except:
                     pass
-            adjusted_width = min(max_length + 2, 50)
-            ws.column_dimensions[column_letter].width = adjusted_width
+            
+            if column_letter:
+                adjusted_width = min(max_length + 2, 50)
+                ws.column_dimensions[column_letter].width = adjusted_width
     
     @staticmethod
     def export_daily_sales(data, date_from, date_to):
@@ -136,7 +148,7 @@ class ExcelExporter:
                 row['spec_name'],
                 row['usage_count'],
                 row['total_boxes'],
-                round(row['extra_kg'], 2),
+                round(row.get('total_extra_kg', 0), 2),
                 round(row['total_kg'], 2)
             ])
         
