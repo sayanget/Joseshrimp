@@ -41,3 +41,8 @@ def customer_sales():
 def spec_sales():
     """按规格统计"""
     return render_template('reports/spec.html')
+
+@reports_bp.route('/by-representative')
+def sales_by_representative():
+    """按销售员统计"""
+    return render_template('reports/sales_by_rep.html')

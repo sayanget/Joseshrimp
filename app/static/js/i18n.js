@@ -170,6 +170,13 @@ const translations = {
         'reports.trend': '销售趋势图',
         'reports.detailed_data': '详细数据',
         'common.no_data': '暂无数据',
+        'reports.by_representative': '按销售员统计',
+        'reports.representative_desc': '销售员业绩排名',
+        'reports.representative': '销售员',
+        'reports.representative_ranking': '销售员排名',
+        'reports.total_amount': '总金额',
+        'reports.sales_detail': '销售详情',
+        'common.loading': '加载中...',
 
         // 系统管理
         'admin.specs': '规格管理',
@@ -386,6 +393,13 @@ const translations = {
         'reports.trend': 'Sales Trend',
         'reports.detailed_data': 'Detailed Data',
         'common.no_data': 'No data available',
+        'reports.by_representative': 'By Representative',
+        'reports.representative_desc': 'Sales representative performance ranking',
+        'reports.representative': 'Sales Representative',
+        'reports.representative_ranking': 'Sales Representative Ranking',
+        'reports.total_amount': 'Total Amount',
+        'reports.sales_detail': 'Sales Detail',
+        'common.loading': 'Loading...',
 
         // Admin
         'admin.specs': 'Specifications',
@@ -602,6 +616,13 @@ const translations = {
         'reports.trend': 'Tendencia de Ventas',
         'reports.detailed_data': 'Datos Detallados',
         'common.no_data': 'No hay datos disponibles',
+        'reports.by_representative': 'Por Vendedor',
+        'reports.representative_desc': 'Clasificación de rendimiento de vendedores',
+        'reports.representative': 'Vendedor',
+        'reports.representative_ranking': 'Clasificación de Vendedores',
+        'reports.total_amount': 'Monto Total',
+        'reports.sales_detail': 'Detalle de Ventas',
+        'common.loading': 'Cargando...',
 
         // Administración
         'admin.specs': 'Especificaciones',

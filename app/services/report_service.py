@@ -271,3 +271,94 @@ class ReportService:
             'avg_kg_per_order': float(total_kg / total_orders) if total_orders > 0 else 0,
             'customer_count': customer_count
         }
+    
+    @staticmethod
+    def get_sales_by_representative(date_from=None, date_to=None):
+        """
+        按销售员统计销售
+        
+        Args:
+            date_from: 开始日期
+            date_to: 结束日期
+            
+        Returns:
+            list: 销售员销售统计数据
+        """
+        query = db.session.query(
+            Sale.created_by.label('representative'),
+            func.count(Sale.id).label('order_count'),
+            func.sum(Sale.total_kg).label('total_kg'),
+            func.sum(Sale.total_amount).label('total_amount'),
+            func.avg(Sale.total_kg).label('avg_kg_per_order'),
+            func.avg(Sale.total_amount).label('avg_amount_per_order'),
+            func.max(Sale.sale_time).label('last_sale_time'),
+            func.sum(
+                db.case(
+                    (Sale.payment_type == '现金', Sale.total_kg),
+                    else_=0
+                )
+            ).label('cash_kg'),
+            func.sum(
+                db.case(
+                    (Sale.payment_type == 'Crédito', Sale.total_kg),
+                    else_=0
+                )
+            ).label('credit_kg')
+        ).filter(
+            Sale.status == 'active'
+        )
+        
+        if date_from:
+            query = query.filter(Sale.sale_time >= date_from)
+        
+        if date_to:
+            query = query.filter(Sale.sale_time <= date_to)
+        
+        result = query.group_by(
+            Sale.created_by
+        ).order_by(
+            func.sum(Sale.total_kg).desc()
+        ).all()
+        
+        return [
+            {
+                'representative': row.representative,
+                'order_count': row.order_count,
+                'total_kg': float(row.total_kg or 0),
+                'total_amount': float(row.total_amount or 0),
+                'avg_kg_per_order': float(row.avg_kg_per_order or 0),
+                'avg_amount_per_order': float(row.avg_amount_per_order or 0),
+                'cash_kg': float(row.cash_kg or 0),
+                'credit_kg': float(row.credit_kg or 0),
+                'last_sale_time': row.last_sale_time.isoformat() if row.last_sale_time and hasattr(row.last_sale_time, 'isoformat') else (str(row.last_sale_time) if row.last_sale_time else None)
+            }
+            for row in result
+        ]
+    
+    @staticmethod
+    def get_representative_sales_detail(representative, date_from=None, date_to=None):
+        """
+        获取指定销售员的所有销售记录详情
+        
+        Args:
+            representative: 销售员用户名
+            date_from: 开始日期
+            date_to: 结束日期
+            
+        Returns:
+            list: 销售记录详情列表
+        """
+        query = db.session.query(Sale).filter(
+            Sale.created_by == representative,
+            Sale.status == 'active'
+        )
+        
+        if date_from:
+            query = query.filter(Sale.sale_time >= date_from)
+        
+        if date_to:
+            query = query.filter(Sale.sale_time <= date_to)
+        
+        sales = query.order_by(Sale.sale_time.desc()).all()
+        
+        return [sale.to_dict(include_items=True) for sale in sales]

@@ -171,3 +171,89 @@ def export_spec_sales():
         return ExcelExporter.export_spec_sales(data, date_from, date_to)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ==================== 销售员报表 ====================
+
+@reports_api.route('/sales-by-representative', methods=['GET'])
+def get_sales_by_representative():
+    """按销售员统计销售"""
+    try:
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        
+        # 转换日期
+        date_from_obj = None
+        date_to_obj = None
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from)
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to)
+        
+        data = ReportService.get_sales_by_representative(date_from_obj, date_to_obj)
+        return jsonify({'data': data})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@reports_api.route('/sales-by-representative/<representative>', methods=['GET'])
+def get_representative_detail(representative):
+    """获取指定销售员的销售记录详情"""
+    try:
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        
+        # 转换日期
+        date_from_obj = None
+        date_to_obj = None
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from)
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to)
+        
+        data = ReportService.get_representative_sales_detail(representative, date_from_obj, date_to_obj)
+        return jsonify({'data': data})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@reports_api.route('/export/sales-by-representative', methods=['GET'])
+def export_sales_by_representative():
+    """导出销售员销售汇总"""
+    try:
+        from app.utils.excel_exporter import ExcelExporter
+        
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        
+        # 转换日期
+        date_from_obj = None
+        date_to_obj = None
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from)
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to)
+        
+        data = ReportService.get_sales_by_representative(date_from_obj, date_to_obj)
+        return ExcelExporter.export_sales_by_representative(data, date_from, date_to)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@reports_api.route('/export/sales-by-representative/<representative>', methods=['GET'])
+def export_representative_detail(representative):
+    """导出指定销售员的销售记录详情"""
+    try:
+        from app.utils.excel_exporter import ExcelExporter
+        
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        
+        # 转换日期
+        date_from_obj = None
+        date_to_obj = None
+        if date_from:
+            date_from_obj = datetime.fromisoformat(date_from)
+        if date_to:
+            date_to_obj = datetime.fromisoformat(date_to)
+        
+        data = ReportService.get_representative_sales_detail(representative, date_from_obj, date_to_obj)
+        return ExcelExporter.export_representative_detail(data, representative, date_from, date_to)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

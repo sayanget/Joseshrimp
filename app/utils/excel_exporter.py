@@ -157,6 +157,77 @@ class ExcelExporter:
         return ExcelExporter.create_response(wb, f'spec_sales_{datetime.now().strftime("%Y%m%d")}.xlsx')
     
     @staticmethod
+    def export_sales_by_representative(data, date_from=None, date_to=None):
+        """导出销售员销售汇总"""
+        wb, ws = ExcelExporter.create_workbook("Sales by Rep")
+        
+        # 标题
+        period = f' ({date_from} to {date_to})' if date_from and date_to else ''
+        ws['A1'] = f'Sales by Representative{period}'
+        ws.merge_cells('A1:H1')
+        ws['A1'].font = Font(size=14, bold=True)
+        ws['A1'].alignment = Alignment(horizontal="center")
+        
+        # 表头
+        headers = ['Rank', 'Representative', 'Orders', 'Total KG', 'Total Amount ($)', 
+                  'Avg KG/Order', 'Cash KG', 'Credit KG']
+        ws.append([])
+        ws.append(headers)
+        ExcelExporter.style_header(ws, row=3)
+        
+        # 数据
+        for idx, row in enumerate(data, 1):
+            ws.append([
+                idx,
+                row['representative'],
+                row['order_count'],
+                round(row['total_kg'], 2),
+                round(row.get('total_amount', 0), 2),
+                round(row.get('avg_kg_per_order', 0), 2),
+                round(row.get('cash_kg', 0), 2),
+                round(row.get('credit_kg', 0), 2)
+            ])
+        
+        ExcelExporter.auto_adjust_column_width(ws)
+        
+        return ExcelExporter.create_response(wb, f'sales_by_representative_{datetime.now().strftime("%Y%m%d")}.xlsx')
+    
+    @staticmethod
+    def export_representative_detail(data, representative, date_from=None, date_to=None):
+        """导出指定销售员的销售记录详情"""
+        wb, ws = ExcelExporter.create_workbook("Rep Detail")
+        
+        # 标题
+        period = f' ({date_from} to {date_to})' if date_from and date_to else ''
+        ws['A1'] = f'Sales Detail for {representative}{period}'
+        ws.merge_cells('A1:G1')
+        ws['A1'].font = Font(size=14, bold=True)
+        ws['A1'].alignment = Alignment(horizontal="center")
+        
+        # 表头
+        headers = ['Sale ID', 'Date', 'Customer', 'Payment Type', 'Total KG', 'Total Amount ($)', 'Status']
+        ws.append([])
+        ws.append(headers)
+        ExcelExporter.style_header(ws, row=3)
+        
+        # 数据
+        for row in data:
+            customer_name = row.get('customer', {}).get('name', 'N/A') if row.get('customer') else 'N/A'
+            ws.append([
+                row['id'],
+                row.get('sale_time', '').split('T')[0] if row.get('sale_time') else '',
+                customer_name,
+                row.get('payment_type', ''),
+                round(row.get('total_kg', 0), 2),
+                round(row.get('total_amount', 0), 2),
+                row.get('status', '')
+            ])
+        
+        ExcelExporter.auto_adjust_column_width(ws)
+        
+        return ExcelExporter.create_response(wb, f'sales_detail_{representative}_{datetime.now().strftime("%Y%m%d")}.xlsx')
+    
+    @staticmethod
     def create_response(wb, filename):
         """创建Flask响应"""
         output = BytesIO()

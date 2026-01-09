@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="reports.by_representative">按销售员统计</span> - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-person-badge"></i> <span data-i18n="reports.by_representative">按销售员统计</span></h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('reports.index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> <span data-i18n="common.back">返回报表首页</span>
+        </a>
+    </div>
+</div>
+
+<!-- 日期选择 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label" data-i18n="reports.date_from">开始日期</label>
+                <input type="date" id="dateFrom" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" data-i18n="reports.date_to">结束日期</label>
+                <input type="date" id="dateTo" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <button type="button" class="btn btn-primary w-100" onclick="loadData()">
+                    <i class="bi bi-search"></i> <span data-i18n="reports.query">查询</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 销售员排名 -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-trophy"></i> <span data-i18n="reports.representative_ranking">销售员排名</span></h5>
+        <button type="button" class="btn btn-success btn-sm" onclick="exportToExcel()">
+            <i class="bi bi-file-earmark-excel"></i> <span data-i18n="common.export">导出Excel</span>
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th data-i18n="reports.ranking">排名</th>
+                        <th data-i18n="reports.representative">销售员</th>
+                        <th data-i18n="reports.order_count">订单数</th>
+                        <th data-i18n="reports.total_sales">总销售(KG)</th>
+                        <th data-i18n="reports.total_amount">总金额($)</th>
+                        <th data-i18n="reports.avg_order">平均订单(KG)</th>
+                        <th data-i18n="reports.cash_sales">现金(KG)</th>
+                        <th data-i18n="reports.credit_sales">信用(KG)</th>
+                        <th data-i18n="common.actions">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="9" class="text-center text-muted" data-i18n="reports.select_date_range">请选择日期范围查询
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 销售详情模态框 -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-list-ul"></i>
+                    <span data-i18n="reports.sales_detail">销售详情</span>: <span id="modalRepName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 text-end">
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportRepDetail()">
+                        <i class="bi bi-file-earmark-excel"></i> <span data-i18n="common.export">导出Excel</span>
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th data-i18n="sales.sale_id">销售单号</th>
+                                <th data-i18n="sales.sale_time">日期</th>
+                                <th data-i18n="sales.customer">客户</th>
+                                <th data-i18n="sales.payment_type">支付方式</th>
+                                <th data-i18n="sales.total_kg">总重量(KG)</th>
+                                <th data-i18n="sales.total_amount">总金额($)</th>
+                                <th data-i18n="sales.status">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">
+                                    <span data-i18n="common.loading">加载中...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <span data-i18n="common.close">关闭</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentRepresentative = '';
+
+    // 设置默认日期（最近30天）
+    document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+        document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+        document.getElementById('dateFrom').value = thirtyDaysAgo.toISOString().split('T')[0];
+
+        loadData();
+    });
+
+    async function loadData() {
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        try {
+            const params = new URLSearchParams();
+            if (dateFrom) params.append('date_from', dateFrom);
+            if (dateTo) params.append('date_to', dateTo);
+
+            const response = await utils.apiRequest(
+                `/api/reports/sales-by-representative?${params.toString()}`
+            );
+            const data = response.data || [];
+
+            updateTable(data);
+        } catch (error) {
+            utils.showAlert('加载数据失败: ' + error.message, 'danger');
+        }
+    }
+
+    function updateTable(data) {
+        const tbody = document.getElementById('tableBody');
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">${i18n.t('reports.no_data')}</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map((row, index) => {
+            const rankBadge = index < 3 ?
+                `<span class="badge bg-${index === 0 ? 'warning' : index === 1 ? 'secondary' : 'danger'}">${index + 1}</span>` :
+                `<span class="badge bg-light text-dark">${index + 1}</span>`;
+
+            return `
+            <tr>
+                <td>${rankBadge}</td>
+                <td><strong>${row.representative}</strong></td>
+                <td>${row.order_count}</td>
+                <td class="text-primary"><strong>${utils.formatNumber(row.total_kg)}</strong></td>
+                <td class="text-success"><strong>$${utils.formatNumber(row.total_amount)}</strong></td>
+                <td>${utils.formatNumber(row.avg_kg_per_order)}</td>
+                <td>${utils.formatNumber(row.cash_kg)}</td>
+                <td>${utils.formatNumber(row.credit_kg)}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="viewDetail('${row.representative}')">
+                        <i class="bi bi-eye"></i> <span data-i18n="common.view">查看</span>
+                    </button>
+                </td>
+            </tr>
+        `;
+        }).join('');
+    }
+
+    // 查看销售员详情
+    async function viewDetail(representative) {
+        currentRepresentative = representative;
+        document.getElementById('modalRepName').textContent = representative;
+
+        const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+        modal.show();
+
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        try {
+            const params = new URLSearchParams();
+            if (dateFrom) params.append('date_from', dateFrom);
+            if (dateTo) params.append('date_to', dateTo);
+
+            const response = await utils.apiRequest(
+                `/api/reports/sales-by-representative/${encodeURIComponent(representative)}?${params.toString()}`
+            );
+            const data = response.data || [];
+
+            updateDetailTable(data);
+        } catch (error) {
+            utils.showAlert('加载详情失败: ' + error.message, 'danger');
+        }
+    }
+
+    function updateDetailTable(data) {
+        const tbody = document.getElementById('detailTableBody');
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">${i18n.t('reports.no_data')}</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map(row => {
+            const customerName = row.customer ? row.customer.name : 'N/A';
+            const saleDate = row.sale_time ? new Date(row.sale_time).toLocaleDateString() : '-';
+            const statusBadge = row.status === 'active' ?
+                '<span class="badge bg-success">Active</span>' :
+                '<span class="badge bg-danger">Void</span>';
+
+            return `
+            <tr>
+                <td><code>${row.id}</code></td>
+                <td>${saleDate}</td>
+                <td>${customerName}</td>
+                <td>${row.payment_type}</td>
+                <td>${utils.formatNumber(row.total_kg)}</td>
+                <td>$${utils.formatNumber(row.total_amount)}</td>
+                <td>${statusBadge}</td>
+            </tr>
+        `;
+        }).join('');
+    }
+
+    // 导出汇总Excel
+    function exportToExcel() {
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        const params = new URLSearchParams();
+        if (dateFrom) params.append('date_from', dateFrom);
+        if (dateTo) params.append('date_to', dateTo);
+
+        window.location.href = `/api/reports/export/sales-by-representative?${params.toString()}`;
+    }
+
+    // 导出销售员详情Excel
+    function exportRepDetail() {
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+
+        const params = new URLSearchParams();
+        if (dateFrom) params.append('date_from', dateFrom);
+        if (dateTo) params.append('date_to', dateTo);
+
+        window.location.href = `/api/reports/export/sales-by-representative/${encodeURIComponent(currentRepresentative)}?${params.toString()}`;
+    }
+</script>
+{% endblock %}
