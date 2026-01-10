@@ -71,6 +71,13 @@ def update_spec(spec_id):
         
         data = request.get_json()
         
+        # Check if name is being changed and if it conflicts with existing spec
+        if 'name' in data and data['name'] != spec.name:
+            existing = Spec.query.filter_by(name=data['name']).first()
+            if existing:
+                return jsonify({'error': '规格名称已存在'}), 400
+            spec.name = data['name']
+        
         if 'kg_per_box' in data:
             spec.kg_per_box = data['kg_per_box']
         if 'updated_by' in data:
@@ -94,6 +101,25 @@ def deactivate_spec(spec_id):
         
         data = request.get_json()
         spec.active = False
+        spec.updated_by = data.get('updated_by', 'system')
+        spec.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify(spec.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@admin_api.route('/specs/<int:spec_id>/activate', methods=['POST'])
+def activate_spec(spec_id):
+    """启用规格"""
+    try:
+        spec = Spec.query.get(spec_id)
+        if not spec:
+            return jsonify({'error': '规格不存在'}), 404
+        
+        data = request.get_json()
+        spec.active = True
         spec.updated_by = data.get('updated_by', 'system')
         spec.updated_at = datetime.utcnow()
         db.session.commit()

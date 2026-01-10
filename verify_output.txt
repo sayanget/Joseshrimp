@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "D:\project\jose\verify_schema.py", line 37, in verify_schema
+    print("\n\u2713 total_amount column EXISTS")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2713' in position 2: character maps to <undefined>
+Connecting to production database...
+
+=== SALE TABLE SCHEMA ===
+  id                   VARCHAR(50)          nullable=False
+  sale_time            TIMESTAMP            nullable=False
+  customer_id          INTEGER              nullable=False
+  payment_type         VARCHAR(20)          nullable=False
+  total_kg             NUMERIC(12, 3)       nullable=False
+  status               VARCHAR(20)          nullable=False
+  void_reason          TEXT                 nullable=True
+  void_time            TIMESTAMP            nullable=True
+  void_by              VARCHAR(50)          nullable=True
+  created_at           TIMESTAMP            nullable=False
+  created_by           VARCHAR(50)          nullable=False
+  updated_at           TIMESTAMP            nullable=True
+  updated_by           VARCHAR(50)          nullable=True
+  total_amount         NUMERIC(12, 2)       nullable=False
+
+ERROR: 'charmap' codec can't encode character '\u2713' in position 2: character maps to <undefined>

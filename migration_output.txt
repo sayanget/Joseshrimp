@@ -1,0 +1,14 @@
+============================================================
+Production Database Schema Fix
+============================================================
+Connecting to production database...
+Database: aws-0-us-west-2.pooler.supabase.com:6543/postgres
+
+Current sale table columns: ['id', 'sale_time', 'customer_id', 'payment_type', 'total_kg', 'status', 'void_reason', 'void_time', 'void_by', 'created_at', 'created_by', 'updated_at', 'updated_by', 'total_amount']
+
+OK: total_amount column already exists in sale table
+
+Final sale table columns: ['id', 'sale_time', 'customer_id', 'payment_type', 'total_kg', 'status', 'void_reason', 'void_time', 'void_by', 'created_at', 'created_by', 'updated_at', 'updated_by', 'total_amount']
+
+SUCCESS: Database schema is now correct!
+============================================================

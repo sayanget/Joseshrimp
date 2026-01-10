@@ -48,12 +48,16 @@
                         <td>{{ spec.created_at|datetime }}</td>
                         <td>
                             <button class="btn btn-sm btn-info"
-                                onclick="editSpec({{ spec.id }}, {{ spec.kg_per_box }})">
+                                onclick="editSpec({{ spec.id }}, '{{ spec.name }}', {{ spec.kg_per_box }})">
                                 <i class="bi bi-pencil"></i> <span data-i18n="common.edit">编辑</span>
                             </button>
                             {% if spec.active %}
                             <button class="btn btn-sm btn-warning" onclick="deactivateSpec({{ spec.id }})">
                                 <i class="bi bi-x-circle"></i> <span data-i18n="admin.deactivate">禁用</span>
+                            </button>
+                            {% else %}
+                            <button class="btn btn-sm btn-success" onclick="activateSpec({{ spec.id }})">
+                                <i class="bi bi-check-circle"></i> <span data-i18n="admin.activate">启用</span>
                             </button>
                             {% endif %}
                         </td>
@@ -121,9 +125,12 @@
                 <form id="editSpecForm">
                     <input type="hidden" id="editSpecId">
                     <div class="mb-3">
+                        <label class="form-label">规格名称 <span class="text-danger">*</span></label>
+                        <input type="text" id="editSpecName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">单箱重量(KG) <span class="text-danger">*</span></label>
                         <input type="number" id="editSpecKgPerBox" class="form-control" step="0.001" required>
-                        <div class="form-text">只能修改单箱重量，其他信息不可修改</div>
                     </div>
                 </form>
             </div>
@@ -167,20 +174,28 @@
         }
     }
 
-    function editSpec(id, kgPerBox) {
+    function editSpec(id, name, kgPerBox) {
         document.getElementById('editSpecId').value = id;
+        document.getElementById('editSpecName').value = name;
         document.getElementById('editSpecKgPerBox').value = kgPerBox;
         new bootstrap.Modal(document.getElementById('editSpecModal')).show();
     }
 
     async function updateSpec() {
         const id = document.getElementById('editSpecId').value;
+        const name = document.getElementById('editSpecName').value;
         const kgPerBox = document.getElementById('editSpecKgPerBox').value;
+
+        if (!name || !kgPerBox) {
+            utils.showAlert('请填写所有必填字段', 'danger');
+            return;
+        }
 
         try {
             await utils.apiRequest(`/api/admin/specs/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify({
+                    name: name,
                     kg_per_box: parseFloat(kgPerBox),
                     updated_by: 'Jose Burgueno'
                 })
@@ -205,6 +220,24 @@
             });
 
             utils.showAlert('规格已禁用！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+
+    async function activateSpec(id) {
+        if (!confirm('确定要启用此规格吗？')) {
+            return;
+        }
+
+        try {
+            await utils.apiRequest(`/api/admin/specs/${id}/activate`, {
+                method: 'POST',
+                body: JSON.stringify({ updated_by: 'Jose Burgueno' })
+            });
+
+            utils.showAlert('规格已启用！', 'success');
             setTimeout(() => location.reload(), 1000);
         } catch (error) {
             utils.showAlert(error.message, 'danger');

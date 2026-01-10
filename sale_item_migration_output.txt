@@ -1,0 +1,20 @@
+============================================================
+Production Database Schema Fix - sale_item table
+============================================================
+Connecting to production database...
+Database: aws-0-us-west-2.pooler.supabase.com:6543/postgres
+
+Current sale_item table columns: ['id', 'sale_id', 'spec_id', 'box_qty', 'extra_kg', 'subtotal_kg', 'created_at']
+
+WARNING: unit_price column is MISSING from sale_item table
+Adding unit_price column...
+SUCCESS: Added unit_price column to sale_item table
+
+WARNING: total_amount column is MISSING from sale_item table
+Adding total_amount column...
+SUCCESS: Added total_amount column to sale_item table
+
+Final sale_item table columns: ['id', 'sale_id', 'spec_id', 'box_qty', 'extra_kg', 'subtotal_kg', 'created_at', 'unit_price', 'total_amount']
+
+SUCCESS: Database schema is now correct!
+============================================================
