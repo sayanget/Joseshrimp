@@ -127,6 +127,16 @@ def register_template_filters(app):
         except (ValueError, TypeError):
             return '0.00'
     
+    @app.template_filter('float')
+    def to_float(value):
+        """Convert value to float"""
+        if value is None:
+            return 0.0
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            return 0.0
+    
     @app.template_filter('date')
     def format_date(value):
         if value is None:
