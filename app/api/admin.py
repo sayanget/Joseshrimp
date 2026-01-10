@@ -2,7 +2,7 @@
 系统管理 API
 """
 from flask import Blueprint, request, jsonify
-from app.models import Spec, Customer, AuditLog
+from app.models import Spec, Customer, AuditLog, Product
 from app import db
 from datetime import datetime
 
@@ -288,4 +288,137 @@ def get_audit_logs():
             'pages': pagination.pages
         })
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ==================== 商品管理 ====================
+
+@admin_api.route('/products', methods=['GET'])
+def get_products():
+    """获取商品列表"""
+    try:
+        active_only = request.args.get('active_only', 'true').lower() == 'true'
+        
+        query = Product.query
+        if active_only:
+            query = query.filter(Product.active == True)
+        
+        products = query.order_by(Product.name).all()
+        return jsonify({'items': [product.to_dict() for product in products]})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_api.route('/products', methods=['POST'])
+def create_product():
+    """创建商品"""
+    try:
+        data = request.get_json()
+        
+        # 验证必填字段
+        if not data.get('name'):
+            return jsonify({'error': '商品名称不能为空'}), 400
+        if not data.get('cash_price'):
+            return jsonify({'error': '现金价格不能为空'}), 400
+        if not data.get('credit_price'):
+            return jsonify({'error': '信用价格不能为空'}), 400
+        
+        # 验证价格为正数
+        if float(data['cash_price']) <= 0:
+            return jsonify({'error': '现金价格必须大于0'}), 400
+        if float(data['credit_price']) <= 0:
+            return jsonify({'error': '信用价格必须大于0'}), 400
+        
+        # 检查名称是否已存在
+        existing = Product.query.filter_by(name=data['name']).first()
+        if existing:
+            return jsonify({'error': '商品名称已存在'}), 400
+        
+        product = Product(
+            name=data['name'],
+            cash_price=data['cash_price'],
+            credit_price=data['credit_price'],
+            created_by=data.get('created_by', 'system')
+        )
+        db.session.add(product)
+        db.session.commit()
+        
+        return jsonify(product.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@admin_api.route('/products/<int:product_id>', methods=['PUT'])
+def update_product(product_id):
+    """更新商品"""
+    try:
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify({'error': '商品不存在'}), 404
+        
+        data = request.get_json()
+        
+        # 检查名称是否被修改且与其他商品冲突
+        if 'name' in data and data['name'] != product.name:
+            existing = Product.query.filter_by(name=data['name']).first()
+            if existing:
+                return jsonify({'error': '商品名称已存在'}), 400
+            product.name = data['name']
+        
+        # 更新价格
+        if 'cash_price' in data:
+            if float(data['cash_price']) <= 0:
+                return jsonify({'error': '现金价格必须大于0'}), 400
+            product.cash_price = data['cash_price']
+        
+        if 'credit_price' in data:
+            if float(data['credit_price']) <= 0:
+                return jsonify({'error': '信用价格必须大于0'}), 400
+            product.credit_price = data['credit_price']
+        
+        if 'updated_by' in data:
+            product.updated_by = data['updated_by']
+        
+        product.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify(product.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@admin_api.route('/products/<int:product_id>/deactivate', methods=['POST'])
+def deactivate_product(product_id):
+    """禁用商品"""
+    try:
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify({'error': '商品不存在'}), 404
+        
+        data = request.get_json()
+        product.active = False
+        product.updated_by = data.get('updated_by', 'system')
+        product.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify(product.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@admin_api.route('/products/<int:product_id>/activate', methods=['POST'])
+def activate_product(product_id):
+    """启用商品"""
+    try:
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify({'error': '商品不存在'}), 404
+        
+        data = request.get_json()
+        product.active = True
+        product.updated_by = data.get('updated_by', 'system')
+        product.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify(product.to_dict())
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500

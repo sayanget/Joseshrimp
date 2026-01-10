@@ -4,7 +4,7 @@
 from flask import Blueprint, render_template, request, jsonify, flash
 from flask_login import login_required
 from app.services.sale_service import SaleService
-from app.models import Customer, Spec
+from app.models import Customer, Spec, Product
 from datetime import datetime
 
 from app.utils.decorators import permission_required
@@ -35,10 +35,12 @@ def create_sale():
     """创建销售单页面"""
     customers = Customer.query.filter_by(active=True).order_by(Customer.name).all()
     specs = Spec.query.filter_by(active=True).order_by(Spec.name).all()
+    products = Product.query.filter_by(active=True).order_by(Product.name).all()
     
     return render_template('sales/create.html',
                          customers=customers,
-                         specs=specs)
+                         specs=specs,
+                         products=products)
 
 @sales_bp.route('/<sale_id>')
 def view_sale(sale_id):

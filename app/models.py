@@ -133,6 +133,41 @@ class Customer(db.Model):
         return f'<Customer {self.name}>'
 
 
+class Product(db.Model):
+    """商品表"""
+    __tablename__ = 'product'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    cash_price = db.Column(db.Numeric(10, 2), nullable=False)  # 现金结算价格($/KG)
+    credit_price = db.Column(db.Numeric(10, 2), nullable=False)  # 信用结算价格($/KG)
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_by = db.Column(db.String(50), nullable=False)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.String(50))
+    
+    # 关系
+    sale_items = db.relationship('SaleItem', backref='product', lazy='dynamic')
+    
+    __table_args__ = (
+        CheckConstraint('cash_price > 0', name='check_cash_price_positive'),
+        CheckConstraint('credit_price > 0', name='check_credit_price_positive'),
+    )
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'cash_price': float(self.cash_price),
+            'credit_price': float(self.credit_price),
+            'active': self.active
+        }
+    
+    def __repr__(self):
+        return f'<Product {self.name}>'
+
+
 class Sale(db.Model):
     """销售单主表"""
     __tablename__ = 'sale'
@@ -194,6 +229,7 @@ class SaleItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sale_id = db.Column(db.String(50), db.ForeignKey('sale.id'), nullable=False)
     spec_id = db.Column(db.Integer, db.ForeignKey('spec.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=True)  # 商品ID(可选)
     box_qty = db.Column(db.Integer, default=0, nullable=False)
     extra_kg = db.Column(db.Numeric(10, 3), default=0, nullable=False)
     subtotal_kg = db.Column(db.Numeric(12, 3), default=0, nullable=False)
@@ -215,6 +251,7 @@ class SaleItem(db.Model):
         return {
             'id': self.id,
             'spec': self.spec.to_dict() if self.spec else None,
+            'product': self.product.to_dict() if self.product else None,
             'box_qty': self.box_qty,
             'extra_kg': float(self.extra_kg),
             'subtotal_kg': float(self.subtotal_kg),

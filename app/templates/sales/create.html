@@ -43,11 +43,24 @@
             <h5 class="mb-3"><span data-i18n="sales.items">销售明细</span></h5>
             <div id="itemsContainer">
                 <div class="row mb-2 item-row">
-                    <div class="col-md-5">
+                    <div class="col-md-3">
+                        <label class="form-label"><span data-i18n="sales.product">商品</span> <span
+                                class="text-danger">*</span></label>
+                        <select class="form-select product-select" required>
+                            <option value="" data-i18n="sales.select_product">请选择商品</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}" data-cash-price="{{ product.cash_price }}"
+                                data-credit-price="{{ product.credit_price }}">
+                                {{ product.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label"><span data-i18n="sales.spec">规格</span> <span
                                 class="text-danger">*</span></label>
                         <select class="form-select spec-select" required>
-                            <option value="">请选择规格</option>
+                            <option value="" data-i18n="sales.select_spec">请选择规格</option>
                             {% for spec in specs %}
                             <option value="{{ spec.id }}" data-kg="{{ spec.kg_per_box }}">
                                 {{ spec.name }} ({{ spec.kg_per_box }}KG/箱)
@@ -63,7 +76,7 @@
                         <label class="form-label" data-i18n="sales.extra_kg">散货(KG)</label>
                         <input type="number" class="form-control extra-kg" min="0" step="0.001" value="0">
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-1">
                         <label class="form-label" data-i18n="sales.subtotal">小计(KG)</label>
                         <input type="text" class="form-control subtotal-kg" readonly>
                     </div>

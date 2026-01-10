@@ -3,7 +3,7 @@
 """
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_required
-from app.models import Spec, Customer, AuditLog, User, Role, Permission
+from app.models import Spec, Customer, AuditLog, User, Role, Permission, Product
 from app.utils.decorators import admin_required
 from app import db
 
@@ -33,6 +33,12 @@ def manage_prices():
     """价格管理"""
     specs = Spec.query.order_by(Spec.name).all()
     return render_template('admin/prices.html', specs=specs)
+
+@admin_bp.route('/products')
+def manage_products():
+    """商品管理"""
+    products = Product.query.order_by(Product.name).all()
+    return render_template('admin/products.html', products=products)
 
 @admin_bp.route('/settings')
 def system_settings():

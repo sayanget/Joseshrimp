@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}商品管理 - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-box-seam"></i> <span data-i18n="admin.products">商品管理</span></h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            <i class="bi bi-plus-circle"></i> <span data-i18n="admin.add_product">添加商品</span>
+        </button>
+    </div>
+</div>
+
+<!-- 商品列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th data-i18n="admin.product_name">商品名称</th>
+                        <th data-i18n="admin.cash_price">现金价($/KG)</th>
+                        <th data-i18n="admin.credit_price">信用价($/KG)</th>
+                        <th data-i18n="common.status">状态</th>
+                        <th data-i18n="admin.created_time">创建时间</th>
+                        <th data-i18n="common.actions">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr class="{% if not product.active %}table-secondary{% endif %}">
+                        <td>{{ product.id }}</td>
+                        <td><strong>{{ product.name }}</strong></td>
+                        <td class="text-success"><strong>${{ product.cash_price|number(2) }}</strong></td>
+                        <td class="text-warning"><strong>${{ product.credit_price|number(2) }}</strong></td>
+                        <td>
+                            <span class="badge bg-{% if product.active %}success{% else %}secondary{% endif %}"
+                                data-i18n="{% if product.active %}common.enabled{% else %}common.disabled{% endif %}">
+                                {{ '启用' if product.active else '禁用' }}
+                            </span>
+                        </td>
+                        <td>{{ product.created_at|datetime }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info"
+                                onclick="editProduct({{ product.id }}, '{{ product.name }}', {{ product.cash_price }}, {{ product.credit_price }})">
+                                <i class="bi bi-pencil"></i> <span data-i18n="common.edit">编辑</span>
+                            </button>
+                            {% if product.active %}
+                            <button class="btn btn-sm btn-warning" onclick="deactivateProduct({{ product.id }})">
+                                <i class="bi bi-x-circle"></i> <span data-i18n="admin.deactivate">禁用</span>
+                            </button>
+                            {% else %}
+                            <button class="btn btn-sm btn-success" onclick="activateProduct({{ product.id }})">
+                                <i class="bi bi-check-circle"></i> <span data-i18n="admin.activate">启用</span>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 添加商品模态框 -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" data-i18n="admin.add_product">添加商品</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addProductForm">
+                    <div class="mb-3">
+                        <label class="form-label"><span data-i18n="admin.product_name">商品名称</span> <span
+                                class="text-danger">*</span></label>
+                        <input type="text" id="productName" class="form-control" placeholder="如:虾" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span data-i18n="admin.cash_price">现金价($/KG)</span> <span
+                                    class="text-danger">*</span></label>
+                            <input type="number" id="productCashPrice" class="form-control" step="0.01" min="0.01"
+                                required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span data-i18n="admin.credit_price">信用价($/KG)</span> <span
+                                    class="text-danger">*</span></label>
+                            <input type="number" id="productCreditPrice" class="form-control" step="0.01" min="0.01"
+                                required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span
+                        data-i18n="common.cancel">取消</span></button>
+                <button type="button" class="btn btn-primary" onclick="submitProduct()"><span
+                        data-i18n="common.submit">提交</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑商品模态框 -->
+<div class="modal fade" id="editProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" data-i18n="admin.edit_product">编辑商品</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProductForm">
+                    <input type="hidden" id="editProductId">
+                    <div class="mb-3">
+                        <label class="form-label"><span data-i18n="admin.product_name">商品名称</span> <span
+                                class="text-danger">*</span></label>
+                        <input type="text" id="editProductName" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span data-i18n="admin.cash_price">现金价($/KG)</span> <span
+                                    class="text-danger">*</span></label>
+                            <input type="number" id="editProductCashPrice" class="form-control" step="0.01" min="0.01"
+                                required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><span data-i18n="admin.credit_price">信用价($/KG)</span> <span
+                                    class="text-danger">*</span></label>
+                            <input type="number" id="editProductCreditPrice" class="form-control" step="0.01" min="0.01"
+                                required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span
+                        data-i18n="common.cancel">取消</span></button>
+                <button type="button" class="btn btn-primary" onclick="updateProduct()"><span
+                        data-i18n="common.save">更新</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function submitProduct() {
+        const name = document.getElementById('productName').value;
+        const cashPrice = document.getElementById('productCashPrice').value;
+        const creditPrice = document.getElementById('productCreditPrice').value;
+
+        if (!name || !cashPrice || !creditPrice) {
+            utils.showAlert('请填写所有必填字段', 'danger');
+            return;
+        }
+
+        try {
+            await utils.apiRequest('/api/admin/products', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name,
+                    cash_price: parseFloat(cashPrice),
+                    credit_price: parseFloat(creditPrice),
+                    created_by: 'Jose Burgueno'
+                })
+            });
+
+            utils.showAlert('商品添加成功！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+
+    function editProduct(id, name, cashPrice, creditPrice) {
+        document.getElementById('editProductId').value = id;
+        document.getElementById('editProductName').value = name;
+        document.getElementById('editProductCashPrice').value = cashPrice;
+        document.getElementById('editProductCreditPrice').value = creditPrice;
+        new bootstrap.Modal(document.getElementById('editProductModal')).show();
+    }
+
+    async function updateProduct() {
+        const id = document.getElementById('editProductId').value;
+        const name = document.getElementById('editProductName').value;
+        const cashPrice = document.getElementById('editProductCashPrice').value;
+        const creditPrice = document.getElementById('editProductCreditPrice').value;
+
+        if (!name || !cashPrice || !creditPrice) {
+            utils.showAlert('请填写所有必填字段', 'danger');
+            return;
+        }
+
+        try {
+            await utils.apiRequest(`/api/admin/products/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    name,
+                    cash_price: parseFloat(cashPrice),
+                    credit_price: parseFloat(creditPrice),
+                    updated_by: 'Jose Burgueno'
+                })
+            });
+
+            utils.showAlert('商品更新成功！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+
+    async function deactivateProduct(id) {
+        if (!confirm('确定要禁用此商品吗？禁用后将无法在新订单中使用。')) {
+            return;
+        }
+
+        try {
+            await utils.apiRequest(`/api/admin/products/${id}/deactivate`, {
+                method: 'POST',
+                body: JSON.stringify({ updated_by: 'Jose Burgueno' })
+            });
+
+            utils.showAlert('商品已禁用！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+
+    async function activateProduct(id) {
+        if (!confirm('确定要启用此商品吗？')) {
+            return;
+        }
+
+        try {
+            await utils.apiRequest(`/api/admin/products/${id}/activate`, {
+                method: 'POST',
+                body: JSON.stringify({ updated_by: 'Jose Burgueno' })
+            });
+
+            utils.showAlert('商品已启用！', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } catch (error) {
+            utils.showAlert(error.message, 'danger');
+        }
+    }
+</script>
+{% endblock %}

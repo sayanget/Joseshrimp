@@ -9,6 +9,7 @@ const translations = {
         'nav.admin': '系统管理',
         'nav.specs': '规格管理',
         'nav.customers': '客户管理',
+        'nav.products': '商品管理',
         'nav.audit': '审计日志',
 
         // 首页
@@ -74,7 +75,10 @@ const translations = {
         'sales.all_payment': '全部支付方式',
         'sales.cash': '现金',
         'sales.credit': 'Crédito',
+        'sales.product': '商品',
+        'sales.select_product': '请选择商品',
         'sales.spec': '规格',
+        'sales.select_spec': '请选择规格',
         'sales.box_qty': '箱数',
         'sales.extra_kg': '散货(KG)',
         'sales.subtotal': '小计(KG)',
@@ -220,7 +224,12 @@ const translations = {
         'admin.cash_price': '现金价格',
         'admin.credit_price': '信用价格',
         'admin.price_management': '价格管理',
-        'admin.set_price': '设置价格'
+        'admin.set_price': '设置价格',
+        'admin.products': '商品管理',
+        'admin.product_name': '商品名称',
+        'admin.add_product': '添加商品',
+        'admin.edit_product': '编辑商品',
+        'admin.activate': '启用'
     },
 
     en: {
@@ -232,6 +241,7 @@ const translations = {
         'nav.admin': 'Admin',
         'nav.specs': 'Specifications',
         'nav.customers': 'Customers',
+        'nav.products': 'Products',
         'nav.audit': 'Audit Log',
 
         // Home
@@ -297,7 +307,10 @@ const translations = {
         'sales.all_payment': 'All Payment Types',
         'sales.cash': 'Cash',
         'sales.credit': 'Credit',
+        'sales.product': 'Product',
+        'sales.select_product': 'Select Product',
         'sales.spec': 'Specification',
+        'sales.select_spec': 'Select Specification',
         'sales.box_qty': 'Box Qty',
         'sales.extra_kg': 'Extra KG',
         'sales.subtotal': 'Subtotal (KG)',
@@ -443,7 +456,12 @@ const translations = {
         'admin.cash_price': 'Cash Price',
         'admin.credit_price': 'Credit Price',
         'admin.price_management': 'Price Management',
-        'admin.set_price': 'Set Price'
+        'admin.set_price': 'Set Price',
+        'admin.products': 'Product Management',
+        'admin.product_name': 'Product Name',
+        'admin.add_product': 'Add Product',
+        'admin.edit_product': 'Edit Product',
+        'admin.activate': 'Activate'
     },
 
     es: {
@@ -455,6 +473,7 @@ const translations = {
         'nav.admin': 'Administración',
         'nav.specs': 'Especificaciones',
         'nav.customers': 'Clientes',
+        'nav.products': 'Productos',
         'nav.audit': 'Registro de Auditoría',
 
         // Inicio
@@ -520,7 +539,10 @@ const translations = {
         'sales.all_payment': 'Todos los Tipos de Pago',
         'sales.cash': 'Efectivo',
         'sales.credit': 'Crédito',
+        'sales.product': 'Producto',
+        'sales.select_product': 'Seleccionar Producto',
         'sales.spec': 'Especificación',
+        'sales.select_spec': 'Seleccionar Especificación',
         'sales.box_qty': 'Cant. Cajas',
         'sales.extra_kg': 'KG Extra',
         'sales.subtotal': 'Subtotal (KG)',
@@ -666,7 +688,12 @@ const translations = {
         'admin.cash_price': 'Precio en Efectivo',
         'admin.credit_price': 'Precio a Crédito',
         'admin.price_management': 'Gestión de Precios',
-        'admin.set_price': 'Establecer Precio'
+        'admin.set_price': 'Establecer Precio',
+        'admin.products': 'Gestión de Productos',
+        'admin.product_name': 'Nombre del Producto',
+        'admin.add_product': 'Agregar Producto',
+        'admin.edit_product': 'Editar Producto',
+        'admin.activate': 'Activar'
     }
 };
 

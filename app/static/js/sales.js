@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newRow = firstRow.cloneNode(true);
 
         // 清空新行的值
+        newRow.querySelector('.product-select').value = '';
         newRow.querySelector('.spec-select').value = '';
         newRow.querySelector('.box-qty').value = '0';
         newRow.querySelector('.extra-kg').value = '0';
@@ -112,12 +113,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // 收集明细数据
         const items = [];
         document.querySelectorAll('.item-row').forEach(row => {
+            const productId = parseInt(row.querySelector('.product-select').value);
             const specId = parseInt(row.querySelector('.spec-select').value);
             const boxQty = parseInt(row.querySelector('.box-qty').value) || 0;
             const extraKg = parseFloat(row.querySelector('.extra-kg').value) || 0;
 
-            if (specId && (boxQty > 0 || extraKg > 0)) {
-                items.push({ spec_id: specId, box_qty: boxQty, extra_kg: extraKg });
+            if (productId && specId && (boxQty > 0 || extraKg > 0)) {
+                items.push({
+                    product_id: productId,
+                    spec_id: specId,
+                    box_qty: boxQty,
+                    extra_kg: extraKg
+                });
             }
         });
 

@@ -2,7 +2,7 @@
 销售业务逻辑服务
 """
 from app import db
-from app.models import Sale, SaleItem, Customer, Spec, StockMove, AuditLog
+from app.models import Sale, SaleItem, Customer, Spec, StockMove, AuditLog, Product
 from datetime import datetime
 from sqlalchemy import func
 import json
@@ -80,21 +80,38 @@ class SaleService:
             if not spec or not spec.active:
                 raise ValueError(f'规格ID {item_data["spec_id"]} 不存在或已禁用')
             
-            # 从系统配置获取全局价格
-            from app.models import SystemConfig
-            cash_price = SystemConfig.get_value('price_cash', value_type=float)
-            credit_price = SystemConfig.get_value('price_credit', value_type=float)
-            
-            # 根据支付方式选择价格
+            # 获取单价
             unit_price = None
-            if payment_type == '现金' and cash_price:
-                unit_price = Decimal(str(cash_price))
-            elif payment_type == 'Crédito' and credit_price:
-                unit_price = Decimal(str(credit_price))
+            product_id = item_data.get('product_id')  # 商品ID(可选)
+            
+            if product_id:
+                # 如果指定了商品,使用商品价格
+                product = Product.query.get(product_id)
+                if not product:
+                    raise ValueError(f'商品ID {product_id} 不存在')
+                if not product.active:
+                    raise ValueError(f'商品 {product.name} 已禁用')
+                
+                # 根据支付方式选择价格
+                if payment_type == '现金':
+                    unit_price = product.cash_price
+                elif payment_type == 'Crédito':
+                    unit_price = product.credit_price
+            else:
+                # 如果没有指定商品,使用全局价格(向后兼容)
+                from app.models import SystemConfig
+                cash_price = SystemConfig.get_value('price_cash', value_type=float)
+                credit_price = SystemConfig.get_value('price_credit', value_type=float)
+                
+                if payment_type == '现金' and cash_price:
+                    unit_price = Decimal(str(cash_price))
+                elif payment_type == 'Crédito' and credit_price:
+                    unit_price = Decimal(str(credit_price))
             
             item = SaleItem(
                 sale_id=sale.id,
                 spec_id=item_data['spec_id'],
+                product_id=product_id,  # 保存商品ID
                 box_qty=item_data.get('box_qty', 0),
                 extra_kg=Decimal(str(item_data.get('extra_kg', 0))),
                 unit_price=unit_price
