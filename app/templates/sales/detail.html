@@ -88,7 +88,7 @@
             </div>
             <div class="card-body text-center">
                 <h1 class="display-4 text-success">
-                    {{ sale.total_kg|float|number(3) }}
+                    {{ sale.total_kg|number(3) }}
                 </h1>
                 <p class="lead">KG</p>
                 {% if sale.total_amount > 0 %}
@@ -155,7 +155,7 @@
                 <tfoot class="table-light">
                     <tr>
                         <th colspan="5" class="text-end"><span data-i18n="sales.total">总计</span>：</th>
-                        <th class="text-success fs-5">{{ sale.total_kg|float|number(3) }} KG</th>
+                        <th class="text-success fs-5">{{ sale.total_kg|number(3) }} KG</th>
                         <th></th>
                         <th class="text-success fs-5">
                             {% if sale.total_amount > 0 %}
