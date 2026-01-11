@@ -36,9 +36,20 @@ def manage_prices():
 
 @admin_bp.route('/products')
 def manage_products():
-    """商品管理"""
+    """商品管理页面"""
     products = Product.query.order_by(Product.name).all()
-    return render_template('admin/products.html', products=products)
+    
+    # 获取所有采购记录中的商品名称（去重）
+    from app.models import PurchaseItem
+    from sqlalchemy import distinct
+    try:
+        purchase_product_names = db.session.query(distinct(PurchaseItem.product_name)).order_by(PurchaseItem.product_name).all()
+        purchase_product_names = [name[0] for name in purchase_product_names]
+    except:
+        # 如果查询失败（比如表不存在），返回空列表
+        purchase_product_names = []
+    
+    return render_template('admin/products.html', products=products, purchase_product_names=purchase_product_names)
 
 @admin_bp.route('/settings')
 def system_settings():
