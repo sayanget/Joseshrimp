@@ -44,8 +44,8 @@
                     <a href="{{ url_for('inventory.stock_moves') }}" class="btn btn-primary btn-lg">
                         <i class="bi bi-arrow-down-up"></i> <span data-i18n="inventory.moves">库存变动</span>
                     </a>
-                    <a href="{{ url_for('inventory.inventory_check') }}" class="btn btn-warning btn-lg">
-                        <i class="bi bi-clipboard-check"></i> <span data-i18n="inventory.check">库存盘点</span>
+                    <a href="{{ url_for('inventory.create_purchase') }}" class="btn btn-success btn-lg">
+                        <i class="bi bi-plus-circle"></i> <span data-i18n="purchase.create">采购入库</span>
                     </a>
                 </div>
             </div>
@@ -72,7 +72,12 @@
                     {% for item in product_stock %}
                     <tr
                         class="{% if item.stock_kg < 10 %}table-warning{% elif item.stock_kg <= 0 %}table-danger{% endif %}">
-                        <td><strong>{{ item.product_name }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('inventory.product_sales', product_name=item.product_name) }}"
+                                class="text-decoration-none">
+                                <strong>{{ item.product_name }}</strong> <i class="bi bi-box-arrow-up-right"></i>
+                            </a>
+                        </td>
                         <td><span
                                 class="fs-5 {% if item.stock_kg > 0 %}text-success{% elif item.stock_kg == 0 %}text-muted{% else %}text-danger{% endif %}">
                                 {{ item.stock_kg|number(3) }} KG
