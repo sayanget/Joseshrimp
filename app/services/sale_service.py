@@ -117,16 +117,16 @@ class SaleService:
                 unit_price=unit_price
             )
             db.session.add(item)
-            
-            # 刷新以获取触发器计算的subtotal_kg
-            db.session.flush()
-            
-            # 计算金额（如果有单价）
-            if item.unit_price:
+        
+        # 刷新一次以触发所有SaleItem的before_insert事件计算subtotal_kg
+        db.session.flush()
+        
+        # 计算每个item的金额（如果有单价）
+        for item in sale.items:
+            if item.unit_price and item.subtotal_kg:
                 item.total_amount = item.subtotal_kg * item.unit_price
         
-        # 计算销售单总金额和总重量
-        # 使用数据库查询而不是ORM关系，避免事务时序问题
+        # 再次刷新以保存total_amount
         db.session.flush()
         
         # 从数据库查询确保获取最新数据
