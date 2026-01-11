@@ -60,6 +60,14 @@
                                         data-i18n="inventory.moves">库存变动</span></a></li>
                             <li><a class="dropdown-item" href="{{ url_for('inventory.inventory_check') }}"><span
                                         data-i18n="inventory.check">库存盘点</span></a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('inventory.list_purchases') }}"><i
+                                        class="bi bi-list-ul"></i> <span data-i18n="purchase.list">采购单列表</span></a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('inventory.create_purchase') }}"><i
+                                        class="bi bi-plus-circle"></i> <span data-i18n="purchase.create">采购入库</span></a>
+                            </li>
                         </ul>
                     </li>
                     {% endif %}
