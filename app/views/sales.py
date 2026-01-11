@@ -76,4 +76,39 @@ def daily_sales(date):
         return redirect(url_for('reports.daily_sales'))
 
 
+@sales_bp.route('/payment-details')
+def payment_details():
+    """收款明细页面"""
+    from app.models import Sale
+    from sqlalchemy import func
+    
+    payment_type = request.args.get('payment_type')
+    payment_status = request.args.get('payment_status')
+    page = request.args.get('page', 1, type=int)
+    
+    today = datetime.now().date()
+    query = Sale.query.filter(
+        func.date(Sale.sale_time) == today,
+        Sale.status == 'active'
+    )
+    
+    if payment_type:
+        query = query.filter(Sale.payment_type == payment_type)
+    if payment_status:
+        query = query.filter(Sale.payment_status == payment_status)
+    
+    pagination = query.order_by(Sale.sale_time.desc()).paginate(
+        page=page, per_page=20, error_out=False
+    )
+    
+    # 计算总计
+    total_amount = sum(float(s.total_amount) for s in pagination.items)
+    total_kg = sum(float(s.total_kg) for s in pagination.items)
+    
+    return render_template('sales/payment_details.html',
+                         pagination=pagination,
+                         payment_type=payment_type,
+                         payment_status=payment_status,
+                         total_amount=total_amount,
+                         total_kg=total_kg)
 
