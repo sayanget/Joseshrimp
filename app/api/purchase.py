@@ -10,7 +10,6 @@ purchase_api = Blueprint('purchase_api', __name__)
 
 @purchase_api.before_request
 @login_required
-@permission_required('create_purchase')
 def before_request():
     """Protect all purchase API routes"""
     pass
