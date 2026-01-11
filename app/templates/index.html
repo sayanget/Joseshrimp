@@ -97,14 +97,30 @@
                 </h5>
             </div>
             <div class="card-body">
-                <h2 class="text-{% if current_stock.warning %}danger{% else %}primary{% endif %}">
-                    {{ (current_stock.current_stock_kg | default(0) | number) }} <span data-i18n="common.kg">KG</span>
-                </h2>
-                {% if current_stock.last_move_time %}
-                <p class="text-muted">
-                    <span data-i18n="inventory.last_move">最后变动</span>: {{ current_stock.last_move_time|datetime }}
-                </p>
-                {% endif %}
+                <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th data-i18n="inventory.product">商品</th>
+                                <th class="text-end" data-i18n="inventory.stock">库存</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in product_stocks %}
+                            <tr>
+                                <td>{{ item.product_name }}</td>
+                                <td class="text-end fw-bold {% if item.stock_kg <= 10 %}text-danger{% endif %}">
+                                    {{ item.stock_kg|number(0) }} <small class="text-muted">KG</small>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted" data-i18n="common.no_data">暂无数据</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
