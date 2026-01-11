@@ -61,11 +61,12 @@ def daily_sales(date):
         # 验证日期格式
         sale_date = datetime.strptime(date, '%Y-%m-%d').date()
         
-        # 获取当天的所有销售记录
-        sales = SaleService.get_sales_by_date(sale_date)
+        # 获取当天的所有销售记录和汇总统计
+        sales, summary = SaleService.get_sales_by_date(sale_date)
         
         return render_template('sales/daily_detail.html',
                              sales=sales,
+                             summary=summary,
                              date=sale_date)
     except ValueError as e:
         flash('Invalid date format', 'error')

@@ -29,7 +29,7 @@
         <div class="card">
             <div class="card-body">
                 <h6 class="card-subtitle mb-2 text-muted" data-i18n="sales.total_weight">总重量(KG)</h6>
-                <h3 class="card-title">{{ sales|sum(attribute='total_kg')|number }}</h3>
+                <h3 class="card-title">{{ summary.total_kg|number }}</h3>
             </div>
         </div>
     </div>
@@ -37,7 +37,7 @@
         <div class="card bg-primary text-white">
             <div class="card-body">
                 <h6 class="card-subtitle mb-2" data-i18n="sales.total_amount">总金额</h6>
-                <h3 class="card-title">${{ sales|sum(attribute='total_amount')|number(2) }}</h3>
+                <h3 class="card-title">${{ summary.total_amount|number(2) }}</h3>
             </div>
         </div>
     </div>
@@ -45,10 +45,8 @@
         <div class="card bg-success text-white">
             <div class="card-body">
                 <h6 class="card-subtitle mb-2" data-i18n="sales.cash">现金</h6>
-                <h4 class="card-title">{{ sales|selectattr('payment_type', 'equalto',
-                    '现金')|sum(attribute='total_kg')|number }} KG</h4>
-                <small>${{ sales|selectattr('payment_type', 'equalto', '现金')|sum(attribute='total_amount')|number(2)
-                    }}</small>
+                <h4 class="card-title">{{ summary.cash_kg|number }} KG</h4>
+                <small>${{ summary.cash_amount|number(2) }}</small>
             </div>
         </div>
     </div>
@@ -56,10 +54,8 @@
         <div class="card bg-warning text-white">
             <div class="card-body">
                 <h6 class="card-subtitle mb-2" data-i18n="sales.credit">信用</h6>
-                <h4 class="card-title">{{ sales|selectattr('payment_type', 'equalto',
-                    'Crédito')|sum(attribute='total_kg')|number }} KG</h4>
-                <small>${{ sales|selectattr('payment_type', 'equalto',
-                    'Crédito')|sum(attribute='total_amount')|number(2) }}</small>
+                <h4 class="card-title">{{ summary.credit_kg|number }} KG</h4>
+                <small>${{ summary.credit_amount|number(2) }}</small>
             </div>
         </div>
     </div>

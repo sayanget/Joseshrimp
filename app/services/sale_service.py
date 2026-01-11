@@ -285,13 +285,13 @@ class SaleService:
     @staticmethod
     def get_sales_by_date(sale_date):
         """
-        获取指定日期的所有销售记录
+        获取指定日期的所有销售记录及汇总统计
         
         Args:
             sale_date: 销售日期 (date对象)
             
         Returns:
-            list: 销售记录列表
+            tuple: (销售记录列表, 汇总统计字典)
         """
         from datetime import datetime, timedelta
         
@@ -305,5 +305,15 @@ class SaleService:
             Sale.status == 'active'
         ).order_by(Sale.sale_time.desc()).all()
         
-        return sales
+        # 计算汇总统计（显式转换为float以避免模板层面的Numeric类型问题）
+        summary = {
+            'total_kg': sum(float(sale.total_kg) for sale in sales),
+            'total_amount': sum(float(sale.total_amount) for sale in sales),
+            'cash_kg': sum(float(sale.total_kg) for sale in sales if sale.payment_type == '现金'),
+            'credit_kg': sum(float(sale.total_kg) for sale in sales if sale.payment_type == 'Crédito'),
+            'cash_amount': sum(float(sale.total_amount) for sale in sales if sale.payment_type == '现金'),
+            'credit_amount': sum(float(sale.total_amount) for sale in sales if sale.payment_type == 'Crédito')
+        }
+        
+        return sales, summary
 
