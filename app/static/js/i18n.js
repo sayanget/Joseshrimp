@@ -167,6 +167,9 @@ const translations = {
         'purchase.void': '作废采购单',
         'purchase.void_confirm': '确认作废',
         'purchase.void_reason': '作废原因',
+        'purchase.supplier_placeholder': '请输入供应商名称',
+        'purchase.notes_placeholder': '可选',
+        'purchase.product_name_placeholder': '商品名称',
 
         // 报表
         'reports.daily': '按日期统计',
@@ -431,6 +434,9 @@ const translations = {
         'purchase.basic_info': 'Basic Information',
         'purchase.summary': 'Summary',
         'purchase.item_list': 'Item List',
+        'purchase.supplier_placeholder': 'Enter supplier name',
+        'purchase.notes_placeholder': 'Optional',
+        'purchase.product_name_placeholder': 'Product name',
 
         // Reports
         'reports.daily': 'Daily Sales',
@@ -695,6 +701,9 @@ const translations = {
         'purchase.basic_info': 'Información Básica',
         'purchase.summary': 'Resumen',
         'purchase.item_list': 'Lista de Artículos',
+        'purchase.supplier_placeholder': 'Ingrese nombre del proveedor',
+        'purchase.notes_placeholder': 'Opcional',
+        'purchase.product_name_placeholder': 'Nombre del producto',
 
         // Informes
         'reports.daily': 'Ventas Diarias',
