@@ -17,9 +17,13 @@ def index():
         # 获取当前库存
         current_stock = InventoryService.get_current_stock()
         
+        # 获取分商品库存
+        product_stocks = InventoryService.get_stock_by_product()
+        
         return render_template('index.html',
                              today_summary=today_summary,
-                             current_stock=current_stock)
+                             current_stock=current_stock,
+                             product_stocks=product_stocks)
     except Exception as e:
         return render_template('index.html',
                              error=str(e),
