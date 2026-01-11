@@ -64,11 +64,15 @@ class SaleService:
             raise ValueError('销售明细不能为空')
         
         # 创建销售单
+        # 现金销售默认为已收款，信用销售默认为未收款
+        payment_status = 'paid' if payment_type == '现金' else 'unpaid'
+        
         sale = Sale(
             id=SaleService.generate_sale_id(),
             sale_time=sale_time or datetime.now(),
             customer_id=customer_id,
             payment_type=payment_type,
+            payment_status=payment_status,
             created_by=created_by
         )
         db.session.add(sale)
@@ -283,11 +287,24 @@ class SaleService:
             Sale.status == 'active'
         ).first()
         
+        # 查询已收现金和未收信用
+        sales_today = Sale.query.filter(
+            func.date(Sale.sale_time) == today,
+            Sale.status == 'active'
+        ).all()
+        
+        cash_received = sum(float(s.total_amount) for s in sales_today 
+                           if s.payment_type == '现金' and s.payment_status == 'paid')
+        credit_outstanding = sum(float(s.total_amount) for s in sales_today 
+                                if s.payment_type == 'Crédito' and s.payment_status == 'unpaid')
+        
         return {
             'order_count': result.order_count or 0,
             'total_kg': float(result.total_kg or 0),
             'cash_kg': float(result.cash_kg or 0),
-            'credit_kg': float(result.credit_kg or 0)
+            'credit_kg': float(result.credit_kg or 0),
+            'cash_received_amount': cash_received,
+            'credit_outstanding_amount': credit_outstanding
         }
     
     @staticmethod

@@ -32,6 +32,8 @@ const translations = {
         'home.create_sale': '创建销售单',
         'home.stock_moves': '库存变动',
         'home.view_reports': '查看报表',
+        'home.received_amount': '已入账',
+        'home.outstanding_amount': '未入账',
 
         // 通用
         'common.search': '查询',
@@ -97,6 +99,7 @@ const translations = {
         'sales.daily_detail': '每日销售详情',
         'sales.total_amount': '金额',
         'sales.total_orders': '条销售记录',
+        'sales.payment_details': '收款明细',
 
         // 库存
         'inventory.current': '当前库存',
@@ -302,6 +305,8 @@ const translations = {
         'home.create_sale': 'Create Sale',
         'home.stock_moves': 'Stock Moves',
         'home.view_reports': 'View Reports',
+        'home.received_amount': 'Received',
+        'home.outstanding_amount': 'Outstanding',
 
         // Common
         'common.search': 'Search',
@@ -367,6 +372,7 @@ const translations = {
         'sales.daily_detail': 'Daily Sales Detail',
         'sales.total_amount': 'Amount',
         'sales.total_orders': 'Sales Records',
+        'sales.payment_details': 'Payment Details',
 
         // Inventory
         'inventory.current': 'Current Stock',
@@ -569,6 +575,8 @@ const translations = {
         'home.create_sale': 'Crear Venta',
         'home.stock_moves': 'Movimientos de Stock',
         'home.view_reports': 'Ver Informes',
+        'home.received_amount': 'Recibido',
+        'home.outstanding_amount': 'Pendiente',
 
         // Común
         'common.search': 'Buscar',
@@ -634,6 +642,7 @@ const translations = {
         'sales.daily_detail': 'Detalle de Ventas Diarias',
         'sales.total_amount': 'Monto',
         'sales.total_orders': 'Registros de Ventas',
+        'sales.payment_details': 'Detalles de Pago',
 
         // Inventario
         'inventory.current': 'Stock Actual',

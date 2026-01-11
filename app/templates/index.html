@@ -42,8 +42,12 @@
                 </h5>
                 <div class="row">
                     <div class="col-6 border-end">
-                        <p class="mb-0 small text-white-50" data-i18n="sales.total_amount">金额</p>
-                        <h3 class="card-text mb-0">${{ (today_summary.cash_amount | default(0) | number(2)) }}</h3>
+                        <p class="mb-0 small text-white-50" data-i18n="home.received_amount">已入账</p>
+                        <a href="{{ url_for('sales.payment_details', payment_type='现金', payment_status='paid') }}"
+                            class="text-white text-decoration-none">
+                            <h3 class="card-text mb-0">${{ (today_summary.cash_received_amount | default(0) | number(2))
+                                }}</h3>
+                        </a>
                     </div>
                     <div class="col-6">
                         <p class="mb-0 small text-white-50" data-i18n="sales.total_weight">重量</p>
@@ -62,8 +66,12 @@
                 </h5>
                 <div class="row">
                     <div class="col-6 border-end">
-                        <p class="mb-0 small text-white-50" data-i18n="sales.total_amount">金额</p>
-                        <h3 class="card-text mb-0">${{ (today_summary.credit_amount | default(0) | number(2)) }}</h3>
+                        <p class="mb-0 small text-white-50" data-i18n="home.outstanding_amount">未入账</p>
+                        <a href="{{ url_for('sales.payment_details', payment_type='Crédito', payment_status='unpaid') }}"
+                            class="text-white text-decoration-none">
+                            <h3 class="card-text mb-0">${{ (today_summary.credit_outstanding_amount | default(0) |
+                                number(2)) }}</h3>
+                        </a>
                     </div>
                     <div class="col-6">
                         <p class="mb-0 small text-white-50" data-i18n="sales.total_weight">重量</p>

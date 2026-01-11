@@ -264,6 +264,7 @@ class Sale(db.Model):
     payment_type = db.Column(db.String(20), nullable=False)
     total_kg = db.Column(db.Numeric(12, 3), default=0, nullable=False)
     total_amount = db.Column(db.Numeric(12, 2), default=0, nullable=False)  # 总金额
+    payment_status = db.Column(db.String(20), default='unpaid', nullable=False)  # 收款状态：unpaid/partial/paid
     status = db.Column(db.String(20), default='active', nullable=False)
     void_reason = db.Column(db.Text)
     void_time = db.Column(db.DateTime)
@@ -280,6 +281,8 @@ class Sale(db.Model):
     __table_args__ = (
         CheckConstraint("payment_type IN ('现金','Crédito')", 
                        name='check_payment_type'),
+        CheckConstraint("payment_status IN ('unpaid','partial','paid')",
+                       name='check_payment_status'),
         CheckConstraint("status IN ('active','void')", 
                        name='check_status'),
     )
@@ -290,6 +293,7 @@ class Sale(db.Model):
             'sale_time': self.sale_time.isoformat() if self.sale_time else None,
             'customer': self.customer.to_dict() if self.customer else None,
             'payment_type': self.payment_type,
+            'payment_status': self.payment_status,
             'total_kg': float(self.total_kg),
             'total_amount': float(self.total_amount),
             'status': self.status,
