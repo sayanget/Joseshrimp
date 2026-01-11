@@ -297,6 +297,7 @@ class SaleService:
                            if s.payment_type == '现金' and s.payment_status == 'paid')
         credit_outstanding = sum(float(s.total_amount) for s in sales_today 
                                 if s.payment_type == 'Crédito' and s.payment_status == 'unpaid')
+        total_amount = sum(float(s.total_amount) for s in sales_today)
         
         return {
             'order_count': result.order_count or 0,
@@ -304,7 +305,8 @@ class SaleService:
             'cash_kg': float(result.cash_kg or 0),
             'credit_kg': float(result.credit_kg or 0),
             'cash_received_amount': cash_received,
-            'credit_outstanding_amount': credit_outstanding
+            'credit_outstanding_amount': credit_outstanding,
+            'total_amount': total_amount
         }
     
     @staticmethod
