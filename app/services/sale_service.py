@@ -294,16 +294,27 @@ class SaleService:
             tuple: (销售记录列表, 汇总统计字典)
         """
         from datetime import datetime, timedelta
+        import logging
+        
+        logger = logging.getLogger(__name__)
         
         # 设置日期范围（当天00:00:00到23:59:59）
         start_datetime = datetime.combine(sale_date, datetime.min.time())
         end_datetime = datetime.combine(sale_date, datetime.max.time())
+        
+        logger.info(f"查询销售记录: {sale_date}, 范围: {start_datetime} 到 {end_datetime}")
         
         sales = Sale.query.filter(
             Sale.sale_time >= start_datetime,
             Sale.sale_time <= end_datetime,
             Sale.status == 'active'
         ).order_by(Sale.sale_time.desc()).all()
+        
+        logger.info(f"找到 {len(sales)} 条销售记录")
+        
+        # 调试：打印每条记录的total_kg
+        for i, sale in enumerate(sales):
+            logger.info(f"Sale {i+1}: ID={sale.id}, total_kg={sale.total_kg} (type={type(sale.total_kg).__name__}), float={float(sale.total_kg)}")
         
         # 计算汇总统计（显式转换为float以避免模板层面的Numeric类型问题）
         summary = {
@@ -314,6 +325,8 @@ class SaleService:
             'cash_amount': sum(float(sale.total_amount) for sale in sales if sale.payment_type == '现金'),
             'credit_amount': sum(float(sale.total_amount) for sale in sales if sale.payment_type == 'Crédito')
         }
+        
+        logger.info(f"计算的汇总数据: {summary}")
         
         return sales, summary
 
