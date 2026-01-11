@@ -3,6 +3,7 @@
 """
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from flask_login import login_required, current_user
+from app import db
 from app.services.inventory_service import InventoryService
 from app.services.purchase_service import PurchaseService
 from app.models import InventoryCheck
@@ -40,29 +41,6 @@ def stock_moves():
     return render_template('inventory/moves.html',
                          pagination=pagination,
                          move_type=move_type)
-
-@inventory_bp.route('/check', methods=['GET', 'POST'])
-def inventory_check():
-    """库存盘点页面"""
-    if request.method == 'POST':
-        try:
-            data = request.get_json()
-            actual_kg = float(data.get('actual_kg'))
-            notes = data.get('notes', '')
-            
-            InventoryService.process_inventory_check(
-                actual_kg=actual_kg,
-                notes=notes,
-                created_by=current_user.username
-            )
-            
-            flash('库存盘点已提交', 'success')
-            return jsonify({'success': True})
-        except Exception as e:
-            return jsonify({'success': False, 'message': str(e)}), 400
-            
-    stock = InventoryService.get_current_stock()
-    return render_template('inventory/check.html', stock=stock)
 
 @inventory_bp.route('/purchase/create')
 def create_purchase():
