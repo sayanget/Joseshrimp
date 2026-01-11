@@ -8,6 +8,9 @@
         <h2><i class="bi bi-list-ul"></i> <span data-i18n="purchase.list">采购单列表</span></h2>
     </div>
     <div class="col-md-6 text-end">
+        <a href="{{ url_for('inventory.export_purchases') }}" class="btn btn-success me-2">
+            <i class="bi bi-file-earmark-excel"></i> <span data-i18n="common.export">导出Excel</span>
+        </a>
         <a href="{{ url_for('inventory.create_purchase') }}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> <span data-i18n="purchase.create">采购入库</span>
         </a>
@@ -37,6 +40,10 @@
                         <td><strong>{{ purchase.total_kg|number(3) }}</strong></td>
                         <td><strong class="text-success">${{ purchase.total_amount|number(2) }}</strong></td>
                         <td>
+                            <a href="{{ url_for('inventory.edit_purchase', purchase_id=purchase.id) }}"
+                                class="btn btn-sm btn-warning me-1">
+                                <i class="bi bi-pencil"></i> <span data-i18n="common.edit">编辑</span>
+                            </a>
                             <a href="{{ url_for('inventory.view_purchase', purchase_id=purchase.id) }}"
                                 class="btn btn-sm btn-info">
                                 <i class="bi bi-eye"></i> <span data-i18n="common.view">查看</span>

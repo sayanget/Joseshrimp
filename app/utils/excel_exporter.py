@@ -239,3 +239,34 @@ class ExcelExporter:
         response.headers['Content-Disposition'] = f'attachment; filename={filename}'
         
         return response
+
+def export_purchases_to_excel(purchases):
+    """导出采购单列表"""
+    wb, ws = ExcelExporter.create_workbook("Purchases")
+    
+    # 标题
+    ws['A1'] = f'Purchase List ({datetime.now().strftime("%Y-%m-%d")})'
+    ws.merge_cells('A1:F1')
+    ws['A1'].font = Font(size=14, bold=True)
+    ws['A1'].alignment = Alignment(horizontal="center")
+    
+    # 表头
+    headers = ['Purchase ID', 'Purchase Time', 'Supplier', 'Total KG', 'Total Amount ($)', 'Payment Status']
+    ws.append([])
+    ws.append(headers)
+    ExcelExporter.style_header(ws, row=3)
+    
+    # 数据
+    for purchase in purchases:
+        ws.append([
+            purchase.id,
+            purchase.purchase_time.strftime('%Y-%m-%d %H:%M'),
+            purchase.supplier,
+            round(float(purchase.total_kg), 3),
+            round(float(purchase.total_amount), 2),
+            purchase.payment_status
+        ])
+    
+    ExcelExporter.auto_adjust_column_width(ws)
+    
+    return ExcelExporter.create_response(wb, f'purchases_{datetime.now().strftime("%Y%m%d")}.xlsx')

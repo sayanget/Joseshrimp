@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="purchase.edit">编辑采购单</span> - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <h2><i class="bi bi-pencil"></i> <span data-i18n="purchase.edit">编辑采购单</span>: {{ purchase.id }}</h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST">
+            <!-- 基本信息 -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label"><span data-i18n="purchase.supplier">供应商</span> <span
+                            class="text-danger">*</span></label>
+                    <input type="text" name="supplier" class="form-control" value="{{ purchase.supplier }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label"><span data-i18n="purchase.purchase_time">采购时间</span></label>
+                    <input type="text" class="form-control"
+                        value="{{ purchase.purchase_time.strftime('%Y-%m-%d %H:%M') }}" readonly>
+                    <small class="text-muted">采购时间不可修改</small>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><span data-i18n="purchase.notes">备注</span></label>
+                <textarea name="notes" class="form-control" rows="3">{{ purchase.notes or '' }}</textarea>
+            </div>
+
+            <!-- 采购明细（只读） -->
+            <h5 class="mb-3"><span data-i18n="purchase.items">采购明细</span> <small class="text-muted">(不可修改)</small></h5>
+            <div class="table-responsive mb-3">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th data-i18n="purchase.product_name">商品名称</th>
+                            <th data-i18n="purchase.weight">重量(KG)</th>
+                            <th data-i18n="purchase.unit_price">单价($/KG)</th>
+                            <th data-i18n="purchase.subtotal">小计($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in purchase.items %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.kg|number(3) }}</td>
+                            <td>${{ item.unit_price|number(2) }}</td>
+                            <td>${{ item.total_amount|number(2) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-info">
+                            <th><span data-i18n="purchase.total">总计</span></th>
+                            <th>{{ purchase.total_kg|number(3) }} KG</th>
+                            <th></th>
+                            <th>${{ purchase.total_amount|number(2) }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>注意：</strong>采购明细和金额不可修改。如需修改明细，请作废此单并创建新的采购单。
+            </div>
+
+            <!-- 按钮 -->
+            <div class="row">
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle"></i> <span data-i18n="common.save">保存</span>
+                    </button>
+                    <a href="{{ url_for('inventory.view_purchase', purchase_id=purchase.id) }}"
+                        class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-circle"></i> <span data-i18n="common.cancel">取消</span>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

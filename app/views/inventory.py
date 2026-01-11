@@ -100,3 +100,39 @@ def product_sales(product_name):
     return render_template('inventory/product_sales.html', 
                          product=product,
                          pagination=pagination)
+
+@inventory_bp.route('/purchase/export')
+def export_purchases():
+    """导出采购单列表为Excel"""
+    from app.utils.excel_exporter import export_purchases_to_excel
+    
+    # 获取所有采购单
+    purchases = Purchase.query.filter_by(status='active').order_by(Purchase.purchase_time.desc()).all()
+    
+    return export_purchases_to_excel(purchases)
+
+@inventory_bp.route('/purchase/<purchase_id>/edit', methods=['GET', 'POST'])
+def edit_purchase(purchase_id):
+    """编辑采购单"""
+    try:
+        purchase = PurchaseService.get_purchase_detail(purchase_id)
+        
+        if request.method == 'POST':
+            # 这里只允许编辑备注和供应商
+            supplier = request.form.get('supplier')
+            notes = request.form.get('notes')
+            
+            if supplier:
+                purchase.supplier = supplier
+            purchase.notes = notes
+            purchase.updated_by = current_user.username
+            purchase.updated_at = datetime.now()
+            
+            db.session.commit()
+            flash('采购单已更新', 'success')
+            return redirect(url_for('inventory.view_purchase', purchase_id=purchase_id))
+        
+        return render_template('inventory/purchase_edit.html', purchase=purchase)
+    except ValueError as e:
+        flash(str(e), 'error')
+        return redirect(url_for('inventory.list_purchases'))
