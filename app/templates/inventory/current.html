@@ -52,4 +52,49 @@
         </div>
     </div>
 </div>
+
+<!-- 按商品统计库存 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-box-seam"></i> <span data-i18n="inventory.by_product">按商品统计</span></h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th data-i18n="admin.product_name">商品名称</th>
+                        <th data-i18n="inventory.stock_kg">库存(KG)</th>
+                        <th data-i18n="common.status">状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in product_stock %}
+                    <tr
+                        class="{% if item.stock_kg < 10 %}table-warning{% elif item.stock_kg <= 0 %}table-danger{% endif %}">
+                        <td><strong>{{ item.product_name }}</strong></td>
+                        <td><span
+                                class="fs-5 {% if item.stock_kg > 0 %}text-success{% elif item.stock_kg == 0 %}text-muted{% else %}text-danger{% endif %}">
+                                {{ item.stock_kg|number(3) }} KG
+                            </span></td>
+                        <td>
+                            {% if item.stock_kg <= 0 %} <span class="badge bg-danger"
+                                data-i18n="inventory.out_of_stock">缺货</span>
+                                {% elif item.stock_kg < 10 %} <span class="badge bg-warning"
+                                    data-i18n="inventory.low_stock">库存偏低</span>
+                                    {% else %}
+                                    <span class="badge bg-success" data-i18n="inventory.in_stock">正常</span>
+                                    {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted" data-i18n="common.no_data">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

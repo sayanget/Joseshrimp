@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - 销售记录{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-box-seam"></i> {{ product.name }} - 销售记录</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('inventory.current_stock') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> 返回库存
+        </a>
+    </div>
+</div>
+
+<!-- 商品信息卡片 -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">商品信息</h5>
+                <p class="mb-1"><strong>商品名称:</strong> {{ product.name }}</p>
+                <p class="mb-1"><strong>现金价:</strong> <span class="text-success">${{ product.cash_price|number(2)
+                        }}/KG</span></p>
+                <p class="mb-0"><strong>信用价:</strong> <span class="text-warning">${{ product.credit_price|number(2)
+                        }}/KG</span></p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">销售统计</h5>
+                <h3>共 {{ pagination.total }} 条销售记录</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 销售记录列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>销售单号</th>
+                        <th>销售时间</th>
+                        <th>客户</th>
+                        <th>支付方式</th>
+                        <th>总重量(KG)</th>
+                        <th>总金额($)</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in pagination.items %}
+                    <tr>
+                        <td><code>{{ sale.id }}</code></td>
+                        <td>{{ sale.sale_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ sale.customer.name if sale.customer else '-' }}</td>
+                        <td>
+                            <span
+                                class="badge bg-{% if sale.payment_type == '现金' %}success{% else %}warning{% endif %}">
+                                {{ sale.payment_type }}
+                            </span>
+                        </td>
+                        <td><strong>{{ sale.total_kg|number(3) }}</strong></td>
+                        <td class="text-success"><strong>${{ sale.total_amount|number(2) }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('sales.view_sale', sale_id=sale.id) }}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> 查看
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">暂无销售记录</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        {% if pagination.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ pagination.prev_num }}">上一页</a>
+                </li>
+                {% endif %}
+
+                {% for page in pagination.iter_pages() %}
+                {% if page %}
+                <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ pagination.next_num }}">下一页</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

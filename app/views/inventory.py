@@ -22,7 +22,8 @@ def before_request():
 def current_stock():
     """当前库存页面"""
     stock = InventoryService.get_current_stock()
-    return render_template('inventory/current.html', stock=stock)
+    product_stock = InventoryService.get_stock_by_product()
+    return render_template('inventory/current.html', stock=stock, product_stock=product_stock)
 
 @inventory_bp.route('/moves')
 def stock_moves():
@@ -93,3 +94,31 @@ def view_purchase(purchase_id):
     except ValueError as e:
         flash(str(e), 'error')
         return redirect(url_for('inventory.list_purchases'))
+
+@inventory_bp.route('/product/<product_name>/sales')
+def product_sales(product_name):
+    """查看商品的销售记录"""
+    from app.models import Sale, SaleItem, Product
+    from app.services.sale_service import SaleService
+    
+    page = request.args.get('page', 1, type=int)
+    
+    # 查找商品
+    product = Product.query.filter_by(name=product_name).first()
+    if not product:
+        flash(f'商品"{product_name}"不存在', 'error')
+        return redirect(url_for('inventory.current_stock'))
+    
+    # 查询包含该商品的销售单
+    pagination = db.session.query(Sale).join(
+        SaleItem, Sale.id == SaleItem.sale_id
+    ).filter(
+        SaleItem.product_id == product.id,
+        Sale.status == 'active'
+    ).order_by(
+        Sale.sale_time.desc()
+    ).paginate(page=page, per_page=20, error_out=False)
+    
+    return render_template('inventory/product_sales.html', 
+                         product=product,
+                         pagination=pagination)

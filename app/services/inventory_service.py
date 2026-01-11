@@ -33,6 +33,71 @@ class InventoryService:
         }
     
     @staticmethod
+    def get_stock_by_product():
+        """
+        按商品统计当前库存
+        
+        Returns:
+            list: 每个商品的库存信息 [{'product_name': 'xxx', 'stock_kg': 100}, ...]
+        """
+        from app.models import PurchaseItem, SaleItem, Purchase, Sale, Product
+        
+        # 获取所有采购商品的总重量（按商品名称分组）
+        purchase_stock = db.session.query(
+            PurchaseItem.product_name,
+            func.sum(PurchaseItem.kg).label('total_kg')
+        ).join(
+            Purchase, PurchaseItem.purchase_id == Purchase.id
+        ).filter(
+            Purchase.status == 'active'
+        ).group_by(
+            PurchaseItem.product_name
+        ).all()
+        
+        # 获取所有销售商品的总重量（按商品名称分组）
+        # SaleItem使用product_id，需要join Product表获取名称
+        sale_stock = db.session.query(
+            Product.name.label('product_name'),
+            func.sum(SaleItem.subtotal_kg).label('total_kg')
+        ).join(
+            Sale, SaleItem.sale_id == Sale.id
+        ).join(
+            Product, SaleItem.product_id == Product.id
+        ).filter(
+            Sale.status == 'active'
+        ).group_by(
+            Product.name
+        ).all()
+        
+        # 构建商品库存字典
+        stock_dict = {}
+        
+        # 添加采购入库
+        for item in purchase_stock:
+            stock_dict[item.product_name] = float(item.total_kg or 0)
+        
+        # 减去销售出库
+        for item in sale_stock:
+            if item.product_name in stock_dict:
+                stock_dict[item.product_name] -= float(item.total_kg or 0)
+            else:
+                stock_dict[item.product_name] = -float(item.total_kg or 0)
+        
+        # 转换为列表并排序
+        result = [
+            {
+                'product_name': name,
+                'stock_kg': kg
+            }
+            for name, kg in stock_dict.items()
+        ]
+        
+        # 按库存量降序排序
+        result.sort(key=lambda x: x['stock_kg'], reverse=True)
+        
+        return result
+    
+    @staticmethod
     def add_stock_move(move_type, source, kg, notes=None, created_by='system'):
         """
         添加库存变动
