@@ -96,7 +96,7 @@ const translations = {
         'sales.auto_calculated': '系统自动计算',
         'sales.daily_detail': '每日销售详情',
         'sales.total_amount': '金额',
-        'sales.total_orders': '总订单数',
+        'sales.total_orders': '条销售记录',
 
         // 库存
         'inventory.current': '当前库存',
@@ -363,7 +363,7 @@ const translations = {
         'sales.auto_calculated': 'Auto-calculated by system',
         'sales.daily_detail': 'Daily Sales Detail',
         'sales.total_amount': 'Amount',
-        'sales.total_orders': 'Total Orders',
+        'sales.total_orders': 'Sales Records',
 
         // Inventory
         'inventory.current': 'Current Stock',
@@ -627,7 +627,7 @@ const translations = {
         'sales.auto_calculated': 'Calculado automáticamente por el sistema',
         'sales.daily_detail': 'Detalle de Ventas Diarias',
         'sales.total_amount': 'Monto',
-        'sales.total_orders': 'Total de Pedidos',
+        'sales.total_orders': 'Registros de Ventas',
 
         // Inventario
         'inventory.current': 'Stock Actual',
