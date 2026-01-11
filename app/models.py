@@ -168,6 +168,92 @@ class Product(db.Model):
         return f'<Product {self.name}>'
 
 
+class Purchase(db.Model):
+    """采购单主表"""
+    __tablename__ = 'purchase'
+    
+    id = db.Column(db.String(50), primary_key=True)
+    purchase_time = db.Column(db.DateTime, nullable=False)
+    supplier = db.Column(db.String(100), nullable=False)
+    total_kg = db.Column(db.Numeric(12, 3), default=0, nullable=False)
+    total_amount = db.Column(db.Numeric(12, 2), default=0, nullable=False)
+    payment_status = db.Column(db.String(20), default='unpaid', nullable=False)
+    notes = db.Column(db.Text)
+    status = db.Column(db.String(20), default='active', nullable=False)
+    void_reason = db.Column(db.Text)
+    void_time = db.Column(db.DateTime)
+    void_by = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_by = db.Column(db.String(50), nullable=False)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.String(50))
+    
+    # 关系
+    items = db.relationship('PurchaseItem', backref='purchase', lazy='dynamic',
+                           cascade='all, delete-orphan')
+    
+    __table_args__ = (
+        CheckConstraint("payment_status IN ('unpaid','partial','paid')", 
+                       name='check_payment_status'),
+        CheckConstraint("status IN ('active','void')", 
+                       name='check_purchase_status'),
+    )
+    
+    def to_dict(self, include_items=False):
+        data = {
+            'id': self.id,
+            'purchase_time': self.purchase_time.isoformat() if self.purchase_time else None,
+            'supplier': self.supplier,
+            'total_kg': float(self.total_kg),
+            'total_amount': float(self.total_amount),
+            'payment_status': self.payment_status,
+            'notes': self.notes,
+            'status': self.status,
+            'created_by': self.created_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+        if self.status == 'void':
+            data['void_reason'] = self.void_reason
+            data['void_time'] = self.void_time.isoformat() if self.void_time else None
+            data['void_by'] = self.void_by
+        if include_items:
+            data['items'] = [item.to_dict() for item in self.items]
+        return data
+    
+    def __repr__(self):
+        return f'<Purchase {self.id}>'
+
+
+class PurchaseItem(db.Model):
+    """采购明细表"""
+    __tablename__ = 'purchase_item'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    purchase_id = db.Column(db.String(50), db.ForeignKey('purchase.id'), nullable=False)
+    product_name = db.Column(db.String(100), nullable=False)
+    kg = db.Column(db.Numeric(10, 3), nullable=False)
+    unit_price = db.Column(db.Numeric(10, 2), nullable=False)
+    total_amount = db.Column(db.Numeric(12, 2), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    __table_args__ = (
+        CheckConstraint('kg > 0', name='check_purchase_kg_positive'),
+        CheckConstraint('unit_price > 0', name='check_purchase_unit_price_positive'),
+    )
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'product_name': self.product_name,
+            'kg': float(self.kg),
+            'unit_price': float(self.unit_price),
+            'total_amount': float(self.total_amount)
+        }
+    
+    def __repr__(self):
+        return f'<PurchaseItem {self.id} for Purchase {self.purchase_id}>'
+
+
 class Sale(db.Model):
     """销售单主表"""
     __tablename__ = 'sale'

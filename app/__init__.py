@@ -87,11 +87,13 @@ def register_blueprints(app):
     from app.api.inventory import inventory_api
     from app.api.reports import reports_api
     from app.api.admin import admin_api
+    from app.api.purchase import purchase_api
     
     app.register_blueprint(sales_api, url_prefix='/api/sales')
     app.register_blueprint(inventory_api, url_prefix='/api/inventory')
     app.register_blueprint(reports_api, url_prefix='/api/reports')
     app.register_blueprint(admin_api, url_prefix='/api/admin')
+    app.register_blueprint(purchase_api, url_prefix='/api/purchase')
 
 def register_error_handlers(app):
     """注册错误处理器"""

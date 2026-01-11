@@ -1,9 +1,10 @@
 """
 库存管理视图
 """
-from flask import Blueprint, render_template, request, jsonify, flash
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from flask_login import login_required, current_user
 from app.services.inventory_service import InventoryService
+from app.services.purchase_service import PurchaseService
 from app.models import InventoryCheck
 from datetime import datetime
 from app.utils.decorators import permission_required
@@ -61,3 +62,34 @@ def inventory_check():
             
     stock = InventoryService.get_current_stock()
     return render_template('inventory/check.html', stock=stock)
+
+@inventory_bp.route('/purchase/create')
+def create_purchase():
+    """采购入库页面"""
+    return render_template('inventory/purchase_create.html')
+
+@inventory_bp.route('/purchase')
+def list_purchases():
+    """采购单列表页面"""
+    page = request.args.get('page', 1, type=int)
+    status = request.args.get('status', 'active')
+    
+    pagination = PurchaseService.get_purchase_list(
+        page=page,
+        per_page=20,
+        status=status
+    )
+    
+    return render_template('inventory/purchase_list.html',
+                         pagination=pagination,
+                         status=status)
+
+@inventory_bp.route('/purchase/<purchase_id>')
+def view_purchase(purchase_id):
+    """采购单详情页面"""
+    try:
+        purchase = PurchaseService.get_purchase_detail(purchase_id)
+        return render_template('inventory/purchase_detail.html', purchase=purchase)
+    except ValueError as e:
+        flash(str(e), 'error')
+        return redirect(url_for('inventory.list_purchases'))

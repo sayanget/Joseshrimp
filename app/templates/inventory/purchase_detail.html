@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="purchase.detail">采购单详情</span> - {{ purchase.id }}{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-file-text"></i> <span data-i18n="purchase.detail">采购单详情</span></h2>
+        <p class="text-muted">{{ purchase.id }}</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('inventory.list_purchases') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> <span data-i18n="common.back">返回</span>
+        </a>
+    </div>
+</div>
+
+<!-- 基本信息卡片 -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title" data-i18n="purchase.basic_info">基本信息</h5>
+                <table class="table table-sm">
+                    <tr>
+                        <th width="40%">采购时间:</th>
+                        <td>{{ purchase.purchase_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                    <tr>
+                        <th>供应商:</th>
+                        <td>{{ purchase.supplier }}</td>
+                    </tr>
+                    <tr>
+                        <th>创建人:</th>
+                        <td>{{ purchase.created_by }}</td>
+                    </tr>
+                    {% if purchase.notes %}
+                    <tr>
+                        <th>备注:</th>
+                        <td>{{ purchase.notes }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">汇总信息</h5>
+                <h3>总重量: {{ purchase.total_kg|number(3) }} KG</h3>
+                <h3>总金额: ${{ purchase.total_amount|number(2) }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 采购明细 -->
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title" data-i18n="purchase.items">采购明细</h5>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th data-i18n="purchase.product_name">商品名称</th>
+                        <th data-i18n="purchase.weight">重量(KG)</th>
+                        <th data-i18n="purchase.unit_price">单价($/KG)</th>
+                        <th data-i18n="purchase.subtotal">小计($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in purchase.items %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ item.product_name }}</strong></td>
+                        <td>{{ item.kg|number(3) }}</td>
+                        <td>${{ item.unit_price|number(2) }}</td>
+                        <td class="text-success"><strong>${{ item.total_amount|number(2) }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-info">
+                        <th colspan="2">合计</th>
+                        <th>{{ purchase.total_kg|number(3) }} KG</th>
+                        <th></th>
+                        <th class="text-success fs-5">${{ purchase.total_amount|number(2) }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

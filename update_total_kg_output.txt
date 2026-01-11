@@ -1,0 +1,9 @@
+============================================================
+Updating total_kg for existing sales records
+============================================================
+
+Found 38 sales records
+
+[OK] All sales records already have correct total_kg
+
+Done!
