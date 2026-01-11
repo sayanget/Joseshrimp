@@ -654,6 +654,8 @@ const translations = {
         'inventory.check': 'Verificación de Stock',
         'inventory.total_stock': 'Stock Total',
         'inventory.last_move': 'Último Movimiento',
+        'inventory.product': 'Producto',
+        'inventory.stock': 'Stock',
         'inventory.check_title': 'Reconciliación de Inventario',
         'inventory.check_instructions': 'Instrucciones de Verificación',
         'inventory.theoretical_note': 'El stock teórico es calculado automáticamente por el sistema (suma de todos los movimientos de stock activos)',
