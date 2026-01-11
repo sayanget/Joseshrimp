@@ -111,28 +111,59 @@ def export_purchases():
     
     return export_purchases_to_excel(purchases)
 
-@inventory_bp.route('/purchase/<purchase_id>/edit', methods=['GET', 'POST'])
-def edit_purchase(purchase_id):
-    """编辑采购单"""
+@inventory_bp.route('/purchase/<purchase_id>/void', methods=['POST'])
+def void_purchase(purchase_id):
+    """作废采购单（API）"""
     try:
-        purchase = PurchaseService.get_purchase_detail(purchase_id)
+        data = request.get_json()
+        reason = data.get('reason')
         
-        if request.method == 'POST':
-            # 这里只允许编辑备注和供应商
-            supplier = request.form.get('supplier')
-            notes = request.form.get('notes')
-            
-            if supplier:
-                purchase.supplier = supplier
-            purchase.notes = notes
-            purchase.updated_by = current_user.username
-            purchase.updated_at = datetime.now()
-            
-            db.session.commit()
-            flash('采购单已更新', 'success')
-            return redirect(url_for('inventory.view_purchase', purchase_id=purchase_id))
+        if not reason:
+            return jsonify({'success': False, 'message': '作废原因不能为空'}), 400
         
-        return render_template('inventory/purchase_edit.html', purchase=purchase)
-    except ValueError as e:
-        flash(str(e), 'error')
-        return redirect(url_for('inventory.list_purchases'))
+        purchase = Purchase.query.get(purchase_id)
+        if not purchase:
+            return jsonify({'success': False, 'message': '采购单不存在'}), 404
+        
+        if purchase.status == 'void':
+            return jsonify({'success': False, 'message': '采购单已作废'}), 400
+        
+        # 作废采购单
+        purchase.status = 'void'
+        purchase.void_reason = reason
+        purchase.void_time = datetime.now()
+        purchase.void_by = current_user.username
+        
+        # 创建反向库存变动（冲减库存）
+        stock_move = StockMove(
+            move_type='退货',
+            source=purchase.supplier,
+            kg=-purchase.total_kg,  # 负数表示减少库存
+            move_time=datetime.now(),
+            reference_id=purchase.id,
+            reference_type='purchase_void',
+            notes=f'作废采购单: {purchase.id} - {reason}',
+            created_by=current_user.username
+        )
+        db.session.add(stock_move)
+        
+        # 记录审计日志
+        from app.models import AuditLog
+        import json
+        audit_log = AuditLog(
+            table_name='purchase',
+            record_id=purchase.id,
+            action='VOID',
+            old_value=json.dumps({'status': 'active'}),
+            new_value=json.dumps({'status': 'void', 'reason': reason}),
+            created_by=current_user.username
+        )
+        db.session.add(audit_log)
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': '采购单已作废'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500

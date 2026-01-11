@@ -40,10 +40,9 @@
                         <td><strong>{{ purchase.total_kg|number(3) }}</strong></td>
                         <td><strong class="text-success">${{ purchase.total_amount|number(2) }}</strong></td>
                         <td>
-                            <a href="{{ url_for('inventory.edit_purchase', purchase_id=purchase.id) }}"
-                                class="btn btn-sm btn-warning me-1">
-                                <i class="bi bi-pencil"></i> <span data-i18n="common.edit">编辑</span>
-                            </a>
+                            <button class="btn btn-sm btn-danger me-1" onclick="voidPurchase('{{ purchase.id }}')">
+                                <i class="bi bi-trash"></i> <span data-i18n="common.delete">删除</span>
+                            </button>
                             <a href="{{ url_for('inventory.view_purchase', purchase_id=purchase.id) }}"
                                 class="btn btn-sm btn-info">
                                 <i class="bi bi-eye"></i> <span data-i18n="common.view">查看</span>
@@ -89,4 +88,79 @@
         {% endif %}
     </div>
 </div>
+
+<!-- 作废确认模态框 -->
+<div class="modal fade" id="voidModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><span data-i18n="purchase.void">作废采购单</span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong data-i18n="purchase.void_confirm">确认要作废此采购单吗？</strong></p>
+                <p class="text-muted">采购单号: <code id="voidPurchaseId"></code></p>
+                <div class="mb-3">
+                    <label class="form-label"><span data-i18n="purchase.void_reason">作废原因</span> <span
+                            class="text-danger">*</span></label>
+                    <textarea id="voidReason" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    作废后将自动冲减库存，此操作不可撤销！
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <span data-i18n="common.cancel">取消</span>
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmVoid()">
+                    <span data-i18n="purchase.void_confirm">确认作废</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPurchaseId = null;
+
+    function voidPurchase(purchaseId) {
+        currentPurchaseId = purchaseId;
+        document.getElementById('voidPurchaseId').textContent = purchaseId;
+        document.getElementById('voidReason').value = '';
+
+        const modal = new bootstrap.Modal(document.getElementById('voidModal'));
+        modal.show();
+    }
+
+    function confirmVoid() {
+        const reason = document.getElementById('voidReason').value.trim();
+
+        if (!reason) {
+            alert('请输入作废原因');
+            return;
+        }
+
+        fetch(`/api/purchase/${currentPurchaseId}/void`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ reason: reason })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('采购单已作废');
+                    location.reload();
+                } else {
+                    alert('作废失败: ' + (data.message || '未知错误'));
+                }
+            })
+            .catch(error => {
+                alert('作废失败: ' + error);
+            });
+    }
+</script>
 {% endblock %}

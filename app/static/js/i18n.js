@@ -161,6 +161,9 @@ const translations = {
         'purchase.basic_info': '基本信息',
         'purchase.summary': '汇总信息',
         'purchase.item_list': '明细列表',
+        'purchase.void': '作废采购单',
+        'purchase.void_confirm': '确认作废',
+        'purchase.void_reason': '作废原因',
 
         // 报表
         'reports.daily': '按日期统计',
