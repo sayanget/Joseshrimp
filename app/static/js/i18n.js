@@ -325,6 +325,9 @@ const translations = {
         'common.confirm': 'Confirm',
         'common.close': 'Close',
         'common.export': 'Export Excel',
+        'common.prev': 'Previous',
+        'common.next': 'Next',
+        'common.total': '',
 
         // Sales
         'sales.list': 'Sales List',
@@ -586,6 +589,9 @@ const translations = {
         'common.confirm': 'Confirmar',
         'common.close': 'Cerrar',
         'common.export': 'Exportar Excel',
+        'common.prev': 'Anterior',
+        'common.next': 'Siguiente',
+        'common.total': '',
 
         // Ventas
         'sales.list': 'Lista de Ventas',
