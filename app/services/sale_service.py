@@ -126,9 +126,17 @@ class SaleService:
                 item.total_amount = item.subtotal_kg * item.unit_price
         
         # 计算销售单总金额和总重量
+        # 使用数据库查询而不是ORM关系，避免事务时序问题
         db.session.flush()
-        sale.total_amount = sum(item.total_amount for item in sale.items)
-        sale.total_kg = sum(item.subtotal_kg for item in sale.items)
+        
+        # 从数据库查询确保获取最新数据
+        total_kg = db.session.query(func.sum(SaleItem.subtotal_kg))\
+            .filter(SaleItem.sale_id == sale.id).scalar() or 0
+        total_amount = db.session.query(func.sum(SaleItem.total_amount))\
+            .filter(SaleItem.sale_id == sale.id).scalar() or 0
+        
+        sale.total_kg = total_kg
+        sale.total_amount = total_amount
         
         
         # 记录审计日志
