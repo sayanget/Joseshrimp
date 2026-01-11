@@ -465,17 +465,20 @@ def calculate_sale_item_subtotal(mapper, connection, target):
         if spec:
             target.subtotal_kg = target.box_qty * spec.kg_per_box + target.extra_kg
 
-
-@event.listens_for(SaleItem, 'after_insert')
-@event.listens_for(SaleItem, 'after_update')
-@event.listens_for(SaleItem, 'after_delete')
-def update_sale_total(mapper, connection, target):
-    """自动更新销售单总重量"""
-    sale = db.session.query(Sale).get(target.sale_id)
-    if sale:
-        total = db.session.query(db.func.sum(SaleItem.subtotal_kg))\
-            .filter(SaleItem.sale_id == target.sale_id).scalar() or 0
-        sale.total_kg = total
+# DISABLED: This event listener conflicts with manual total_kg calculation in create_sale()
+# The manual calculation using database queries is more reliable and avoids
+# SQLAlchemy attribute history warnings
+#
+# @event.listens_for(SaleItem, 'after_insert')
+# @event.listens_for(SaleItem, 'after_update')
+# @event.listens_for(SaleItem, 'after_delete')
+# def update_sale_total(mapper, connection, target):
+#     """自动更新销售单总重量"""
+#     sale = db.session.query(Sale).get(target.sale_id)
+#     if sale:
+#         total = db.session.query(db.func.sum(SaleItem.subtotal_kg))\
+#             .filter(SaleItem.sale_id == target.sale_id).scalar() or 0
+#         sale.total_kg = total
 
 
 @event.listens_for(Sale, 'after_insert')
