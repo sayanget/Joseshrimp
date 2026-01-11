@@ -29,8 +29,15 @@
                 <h5 class="card-title">
                     <i class="bi bi-graph-up"></i> <span data-i18n="home.sales_today">今日销售</span>
                 </h5>
-                <h2 class="card-text">{{ (today_summary.total_kg | default(0) | number) }}</h2>
-                <p class="card-text"><small data-i18n="common.kg">KG</small></p>
+                <div class="row">
+                    <div class="col-6 border-end">
+                        <h3 class="card-text mb-0">${{ (today_summary.total_amount | default(0) | number(2)) }}</h3>
+                    </div>
+                    <div class="col-6">
+                        <h3 class="card-text mb-0">{{ (today_summary.total_kg | default(0) | number) }}</h3>
+                        <small data-i18n="common.kg">KG</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
