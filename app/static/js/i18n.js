@@ -58,6 +58,9 @@ const translations = {
         'common.confirm': '确认',
         'common.close': '关闭',
         'common.export': '导出Excel',
+        'common.prev': '上一页',
+        'common.next': '下一页',
+        'common.total': '共',
 
         // 销售
         'sales.list': '销售单列表',

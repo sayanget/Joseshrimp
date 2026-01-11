@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}{{ product.name }} - 销售记录{% endblock %}
+{% block title %}{{ product.name }} - <span data-i18n="sales.list">销售记录</span>{% endblock %}
 
 {% block content %}
 <div class="row mb-3">
     <div class="col-md-6">
-        <h2><i class="bi bi-box-seam"></i> {{ product.name }} - 销售记录</h2>
+        <h2><i class="bi bi-box-seam"></i> {{ product.name }} - <span data-i18n="sales.list">销售记录</span></h2>
     </div>
     <div class="col-md-6 text-end">
         <a href="{{ url_for('inventory.current_stock') }}" class="btn btn-secondary">
-            <i class="bi bi-arrow-left"></i> 返回库存
+            <i class="bi bi-arrow-left"></i> <span data-i18n="common.back">返回库存</span>
         </a>
     </div>
 </div>
@@ -19,11 +19,13 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">商品信息</h5>
-                <p class="mb-1"><strong>商品名称:</strong> {{ product.name }}</p>
-                <p class="mb-1"><strong>现金价:</strong> <span class="text-success">${{ product.cash_price|number(2)
+                <h5 class="card-title" data-i18n="admin.product_name">商品信息</h5>
+                <p class="mb-1"><strong data-i18n="admin.product_name">商品名称</strong>: {{ product.name }}</p>
+                <p class="mb-1"><strong data-i18n="admin.cash_price">现金价</strong>: <span class="text-success">${{
+                        product.cash_price|number(2)
                         }}/KG</span></p>
-                <p class="mb-0"><strong>信用价:</strong> <span class="text-warning">${{ product.credit_price|number(2)
+                <p class="mb-0"><strong data-i18n="admin.credit_price">信用价</strong>: <span class="text-warning">${{
+                        product.credit_price|number(2)
                         }}/KG</span></p>
             </div>
         </div>
@@ -31,8 +33,9 @@
     <div class="col-md-8">
         <div class="card bg-primary text-white">
             <div class="card-body">
-                <h5 class="card-title">销售统计</h5>
-                <h3>共 {{ pagination.total }} 条销售记录</h3>
+                <h5 class="card-title" data-i18n="sales.total_orders">销售统计</h5>
+                <h3><span data-i18n="common.total">共</span> {{ pagination.total }} <span
+                        data-i18n="sales.total_orders">条销售记录</span></h3>
             </div>
         </div>
     </div>
@@ -45,13 +48,13 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>销售单号</th>
-                        <th>销售时间</th>
-                        <th>客户</th>
-                        <th>支付方式</th>
-                        <th>总重量(KG)</th>
-                        <th>总金额($)</th>
-                        <th>操作</th>
+                        <th data-i18n="sales.sale_id">销售单号</th>
+                        <th data-i18n="sales.sale_time">销售时间</th>
+                        <th data-i18n="sales.customer">客户</th>
+                        <th data-i18n="sales.payment_type">支付方式</th>
+                        <th data-i18n="sales.total_weight">总重量(KG)</th>
+                        <th data-i18n="sales.total_amount">总金额($)</th>
+                        <th data-i18n="common.actions">操作</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -70,13 +73,13 @@
                         <td class="text-success"><strong>${{ sale.total_amount|number(2) }}</strong></td>
                         <td>
                             <a href="{{ url_for('sales.view_sale', sale_id=sale.id) }}" class="btn btn-sm btn-info">
-                                <i class="bi bi-eye"></i> 查看
+                                <i class="bi bi-eye"></i> <span data-i18n="common.view">查看</span>
                             </a>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="7" class="text-center text-muted">暂无销售记录</td>
+                        <td colspan="7" class="text-center text-muted" data-i18n="common.no_data">暂无销售记录</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -89,7 +92,7 @@
             <ul class="pagination justify-content-center">
                 {% if pagination.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ pagination.prev_num }}">上一页</a>
+                    <a class="page-link" href="?page={{ pagination.prev_num }}" data-i18n="common.prev">上一页</a>
                 </li>
                 {% endif %}
 
@@ -105,7 +108,7 @@
 
                 {% if pagination.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ pagination.next_num }}">下一页</a>
+                    <a class="page-link" href="?page={{ pagination.next_num }}" data-i18n="common.next">下一页</a>
                 </li>
                 {% endif %}
             </ul>
