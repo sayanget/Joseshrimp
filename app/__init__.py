@@ -150,40 +150,71 @@ def register_template_filters(app):
         return value.strftime('%Y-%m-%d')
 
 def run_migrations():
-    """运行数据库迁移 - 自动添加缺失的列"""
+    """运行数据库迁移 - 自动添加缺失的列和表"""
     from sqlalchemy import text, inspect
     import logging
     
     logger = logging.getLogger(__name__)
     
     try:
-        # 检查sale表是否存在discount和manual_total_amount列
         inspector = inspect(db.engine)
-        columns = [col['name'] for col in inspector.get_columns('sale')]
+        existing_tables = inspector.get_table_names()
         
-        migrations_needed = []
+        # 检查并创建remittance表
+        if 'remittance' not in existing_tables:
+            logger.info("Creating remittance table...")
+            try:
+                db.session.execute(text("""
+                    CREATE TABLE remittance (
+                        id SERIAL PRIMARY KEY,
+                        remittance_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        sale_id VARCHAR(50) NOT NULL,
+                        amount NUMERIC(12, 2) NOT NULL,
+                        notes TEXT,
+                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        created_by VARCHAR(50) NOT NULL,
+                        CONSTRAINT fk_remittance_sale FOREIGN KEY (sale_id) REFERENCES sale(id),
+                        CONSTRAINT check_remittance_amount_positive CHECK (amount > 0)
+                    )
+                """))
+                
+                # 创建索引
+                db.session.execute(text("CREATE INDEX idx_remittance_sale_id ON remittance(sale_id)"))
+                db.session.execute(text("CREATE INDEX idx_remittance_time ON remittance(remittance_time)"))
+                
+                db.session.commit()
+                logger.info("✓ Remittance table created successfully")
+            except Exception as e:
+                logger.warning(f"Could not create remittance table: {e}")
+                db.session.rollback()
         
-        if 'discount' not in columns:
-            migrations_needed.append(('discount', 'NUMERIC(12, 2) DEFAULT 0'))
-        
-        if 'manual_total_amount' not in columns:
-            migrations_needed.append(('manual_total_amount', 'NUMERIC(12, 2)'))
-        
-        if migrations_needed:
-            logger.info(f"Running database migrations: {len(migrations_needed)} column(s) to add")
+        # 检查sale表是否存在discount和manual_total_amount列
+        if 'sale' in existing_tables:
+            columns = [col['name'] for col in inspector.get_columns('sale')]
             
-            for column_name, column_def in migrations_needed:
-                try:
-                    db.session.execute(text(f"ALTER TABLE sale ADD COLUMN {column_name} {column_def}"))
-                    logger.info(f"✓ Added column: {column_name}")
-                except Exception as e:
-                    logger.warning(f"Could not add column {column_name}: {e}")
+            migrations_needed = []
             
-            db.session.commit()
-            logger.info("✓ Database migrations completed successfully")
-        else:
-            logger.info("✓ Database schema is up to date")
+            if 'discount' not in columns:
+                migrations_needed.append(('discount', 'NUMERIC(12, 2) DEFAULT 0'))
             
+            if 'manual_total_amount' not in columns:
+                migrations_needed.append(('manual_total_amount', 'NUMERIC(12, 2)'))
+            
+            if migrations_needed:
+                logger.info(f"Running database migrations: {len(migrations_needed)} column(s) to add")
+                
+                for column_name, column_def in migrations_needed:
+                    try:
+                        db.session.execute(text(f"ALTER TABLE sale ADD COLUMN {column_name} {column_def}"))
+                        logger.info(f"✓ Added column: {column_name}")
+                    except Exception as e:
+                        logger.warning(f"Could not add column {column_name}: {e}")
+                
+                db.session.commit()
+                logger.info("✓ Database migrations completed successfully")
+            else:
+                logger.info("✓ Database schema is up to date")
+        
     except Exception as e:
         logger.error(f"Migration error: {e}")
         db.session.rollback()
