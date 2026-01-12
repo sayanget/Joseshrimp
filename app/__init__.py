@@ -61,6 +61,10 @@ def create_app(config_name='default'):
     # 注册模板过滤器
     register_template_filters(app)
     
+    # 运行数据库迁移（仅在生产环境）
+    with app.app_context():
+        run_migrations()
+    
     return app
 
 def register_blueprints(app):
@@ -144,3 +148,43 @@ def register_template_filters(app):
         if value is None:
             return ''
         return value.strftime('%Y-%m-%d')
+
+def run_migrations():
+    """运行数据库迁移 - 自动添加缺失的列"""
+    from sqlalchemy import text, inspect
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # 检查sale表是否存在discount和manual_total_amount列
+        inspector = inspect(db.engine)
+        columns = [col['name'] for col in inspector.get_columns('sale')]
+        
+        migrations_needed = []
+        
+        if 'discount' not in columns:
+            migrations_needed.append(('discount', 'NUMERIC(12, 2) DEFAULT 0'))
+        
+        if 'manual_total_amount' not in columns:
+            migrations_needed.append(('manual_total_amount', 'NUMERIC(12, 2)'))
+        
+        if migrations_needed:
+            logger.info(f"Running database migrations: {len(migrations_needed)} column(s) to add")
+            
+            for column_name, column_def in migrations_needed:
+                try:
+                    db.session.execute(text(f"ALTER TABLE sale ADD COLUMN {column_name} {column_def}"))
+                    logger.info(f"✓ Added column: {column_name}")
+                except Exception as e:
+                    logger.warning(f"Could not add column {column_name}: {e}")
+            
+            db.session.commit()
+            logger.info("✓ Database migrations completed successfully")
+        else:
+            logger.info("✓ Database schema is up to date")
+            
+    except Exception as e:
+        logger.error(f"Migration error: {e}")
+        db.session.rollback()
+        # 不抛出异常，让应用继续启动
