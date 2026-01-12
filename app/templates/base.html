@@ -45,6 +45,11 @@
                                         data-i18n="sales.list">销售单列表</span></a></li>
                             <li><a class="dropdown-item" href="{{ url_for('sales.create_sale') }}"><span
                                         data-i18n="sales.create">创建销售单</span></a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('sales.remittance_page') }}"><span
+                                        data-i18n="sales.remittance">回款管理</span></a></li>
                         </ul>
                     </li>
                     {% endif %}

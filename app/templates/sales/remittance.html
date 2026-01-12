@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}<span data-i18n="sales.remittance">回款管理</span> - 销售管理系统{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-cash-coin"></i> <span data-i18n="sales.remittance">回款管理</span></h2>
+        <p class="text-muted" data-i18n="sales.remittance_desc">管理信用销售的回款记录</p>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> <span data-i18n="common.back">返回</span>
+        </a>
+    </div>
+</div>
+
+<!-- 汇总信息 -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title" data-i18n="sales.total_amount">总金额</h5>
+                <h2>${{ total_amount|number(2) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title" data-i18n="sales.paid_amount">已回款</h5>
+                <h2>${{ total_paid|number(2) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title" data-i18n="sales.unpaid_amount">未回款</h5>
+                <h2>${{ total_unpaid|number(2) }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 信用结算记录列表 -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th data-i18n="sales.sale_id">销售单号</th>
+                        <th data-i18n="sales.sale_time">销售时间</th>
+                        <th data-i18n="sales.customer">客户</th>
+                        <th data-i18n="sales.total_amount">总金额($)</th>
+                        <th data-i18n="sales.paid_amount">已回款($)</th>
+                        <th data-i18n="sales.unpaid_amount">未回款($)</th>
+                        <th data-i18n="sales.payment_status">状态</th>
+                        <th data-i18n="common.actions">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in pagination.items %}
+                    <tr>
+                        <td><code>{{ sale.id }}</code></td>
+                        <td>{{ sale.sale_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ sale.customer.name if sale.customer else '-' }}</td>
+                        <td><strong>${{ sale.total_amount|number(2) }}</strong></td>
+                        <td class="text-success"><strong>${{ sale.paid_amount|number(2) }}</strong></td>
+                        <td class="text-warning"><strong>${{ sale.unpaid_amount|number(2) }}</strong></td>
+                        <td>
+                            {% if sale.payment_status == 'paid' %}
+                            <span class="badge bg-success" data-i18n="sales.status_paid">已付清</span>
+                            {% elif sale.payment_status == 'partial' %}
+                            <span class="badge bg-warning" data-i18n="sales.status_partial">部分回款</span>
+                            {% else %}
+                            <span class="badge bg-danger" data-i18n="sales.status_unpaid">未回款</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sale.payment_status != 'paid' %}
+                            <button class="btn btn-sm btn-primary remittance-btn" data-sale-id="{{ sale.id }}"
+                                data-unpaid-amount="{{ sale.unpaid_amount }}"
+                                data-customer-name="{{ sale.customer.name if sale.customer else '' }}">
+                                <i class="bi bi-cash"></i> <span data-i18n="sales.remit">回款</span>
+                            </button>
+                            {% endif %}
+                            <a href="{{ url_for('sales.view_sale', sale_id=sale.id) }}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> <span data-i18n="common.view">查看</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted" data-i18n="common.no_data">暂无数据</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        {% if pagination.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="?payment_status={{ payment_status }}&page={{ pagination.prev_num }}"
+                        data-i18n="common.prev">上一页</a>
+                </li>
+                {% endif %}
+
+                {% for page in pagination.iter_pages() %}
+                {% if page %}
+                <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="?payment_status={{ payment_status }}&page={{ page }}">{{
+                        page }}</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?payment_status={{ payment_status }}&page={{ pagination.next_num }}"
+                        data-i18n="common.next">下一页</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 回款模态框 -->
+<div class="modal fade" id="remittanceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" data-i18n="sales.remittance">回款</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="remittanceForm">
+                    <input type="hidden" id="remittanceSaleId" name="sale_id">
+
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="sales.customer">客户</label>
+                        <input type="text" class="form-control" id="remittanceCustomer" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="sales.unpaid_amount">未回款金额</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="text" class="form-control" id="remittanceUnpaid" readonly>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="remittanceAmount" class="form-label">
+                            <span data-i18n="sales.remittance_amount">回款金额</span> <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="remittanceAmount" name="amount" step="0.01"
+                                min="0.01" required>
+                        </div>
+                        <div class="form-text" data-i18n="sales.remittance_amount_hint">请输入回款金额，不能超过未回款金额</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="remittanceNotes" class="form-label" data-i18n="common.notes">备注</label>
+                        <textarea class="form-control" id="remittanceNotes" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    data-i18n="common.cancel">取消</button>
+                <button type="button" class="btn btn-primary" onclick="submitRemittance()"
+                    data-i18n="common.submit">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let remittanceModal;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        remittanceModal = new bootstrap.Modal(document.getElementById('remittanceModal'));
+
+        // Add event listeners to remittance buttons
+        document.querySelectorAll('.remittance-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const saleId = this.dataset.saleId;
+                const unpaidAmount = parseFloat(this.dataset.unpaidAmount);
+                const customerName = this.dataset.customerName;
+                openRemittanceModal(saleId, unpaidAmount, customerName);
+            });
+        });
+    });
+
+    function openRemittanceModal(saleId, unpaidAmount, customerName) {
+        document.getElementById('remittanceSaleId').value = saleId;
+        document.getElementById('remittanceCustomer').value = customerName;
+        document.getElementById('remittanceUnpaid').value = unpaidAmount.toFixed(2);
+        document.getElementById('remittanceAmount').value = '';
+        document.getElementById('remittanceAmount').max = unpaidAmount.toFixed(2);
+        document.getElementById('remittanceNotes').value = '';
+
+        remittanceModal.show();
+    }
+
+    function submitRemittance() {
+        const form = document.getElementById('remittanceForm');
+        const saleId = document.getElementById('remittanceSaleId').value;
+        const amount = parseFloat(document.getElementById('remittanceAmount').value);
+        const unpaid = parseFloat(document.getElementById('remittanceUnpaid').value);
+        const notes = document.getElementById('remittanceNotes').value;
+
+        // 验证
+        if (!amount || amount <= 0) {
+            alert('请输入有效的回款金额');
+            return;
+        }
+
+        if (amount > unpaid) {
+            alert('回款金额不能超过未回款金额');
+            return;
+        }
+
+        // 提交数据
+        const data = {
+            sale_id: saleId,
+            amount: amount,
+            notes: notes,
+            created_by: '{{ current_user.username }}'
+        };
+
+        fetch('/api/sales/remittance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('回款失败: ' + data.error);
+                } else {
+                    alert('回款成功！');
+                    remittanceModal.hide();
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                alert('回款失败: ' + error);
+            });
+    }
+</script>
+{% endblock %}

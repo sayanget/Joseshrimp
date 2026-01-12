@@ -279,6 +279,8 @@ class Sale(db.Model):
     # 关系
     items = db.relationship('SaleItem', backref='sale', lazy='dynamic',
                            cascade='all, delete-orphan')
+    remittances = db.relationship('Remittance', backref='sale', lazy='dynamic',
+                                 cascade='all, delete-orphan')
     
     __table_args__ = (
         CheckConstraint("payment_type IN ('现金','Crédito')", 
@@ -314,6 +316,38 @@ class Sale(db.Model):
     
     def __repr__(self):
         return f'<Sale {self.id}>'
+
+
+class Remittance(db.Model):
+    """回款记录表"""
+    __tablename__ = 'remittance'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    remittance_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    sale_id = db.Column(db.String(50), db.ForeignKey('sale.id'), nullable=False)
+    amount = db.Column(db.Numeric(12, 2), nullable=False)  # 回款金额
+    notes = db.Column(db.Text)  # 备注
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_by = db.Column(db.String(50), nullable=False)
+    
+    __table_args__ = (
+        CheckConstraint('amount > 0', name='check_remittance_amount_positive'),
+    )
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'remittance_time': self.remittance_time.isoformat() if self.remittance_time else None,
+            'sale_id': self.sale_id,
+            'amount': float(self.amount),
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'created_by': self.created_by
+        }
+    
+    def __repr__(self):
+        return f'<Remittance {self.id} for Sale {self.sale_id}>'
+
 
 
 class SaleItem(db.Model):

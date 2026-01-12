@@ -112,3 +112,31 @@ def payment_details():
                          total_amount=total_amount,
                          total_kg=total_kg)
 
+
+@sales_bp.route('/remittance')
+def remittance_page():
+    """回款页面"""
+    from app.services.remittance_service import RemittanceService
+    
+    page = request.args.get('page', 1, type=int)
+    payment_status = request.args.get('payment_status')
+    
+    # 获取信用结算记录列表
+    pagination = RemittanceService.get_credit_sales_list(
+        page=page,
+        per_page=20,
+        payment_status=payment_status
+    )
+    
+    # 计算总计
+    total_amount = sum(float(s.total_amount) for s in pagination.items)
+    total_unpaid = sum(s.unpaid_amount for s in pagination.items)
+    total_paid = sum(s.paid_amount for s in pagination.items)
+    
+    return render_template('sales/remittance.html',
+                         pagination=pagination,
+                         payment_status=payment_status,
+                         total_amount=total_amount,
+                         total_unpaid=total_unpaid,
+                         total_paid=total_paid)
+
