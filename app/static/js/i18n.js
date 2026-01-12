@@ -100,6 +100,12 @@ const translations = {
         'sales.total_amount': '金额',
         'sales.total_orders': '条销售记录',
         'sales.payment_details': '收款明细',
+        'sales.subtotal_amount': '小计金额',
+        'sales.discount_amount': '折扣金额',
+        'sales.manual_total': '手动总金额 (可选)',
+        'sales.manual_total_placeholder': '自动计算',
+        'sales.manual_total_help': '输入后将作为最终金额',
+        'sales.final_total': '最终总金额',
 
         // 库存
         'inventory.current': '当前库存',
@@ -375,6 +381,12 @@ const translations = {
         'sales.total_amount': 'Amount',
         'sales.total_orders': 'Sales Records',
         'sales.payment_details': 'Payment Details',
+        'sales.subtotal_amount': 'Subtotal Amount',
+        'sales.discount_amount': 'Discount Amount',
+        'sales.manual_total': 'Manual Total (Optional)',
+        'sales.manual_total_placeholder': 'Auto-calc',
+        'sales.manual_total_help': 'Input will be final amount',
+        'sales.final_total': 'Final Total Amount',
 
         // Inventory
         'inventory.current': 'Current Stock',
@@ -647,6 +659,12 @@ const translations = {
         'sales.total_amount': 'Monto',
         'sales.total_orders': 'Registros de Ventas',
         'sales.payment_details': 'Detalles de Pago',
+        'sales.subtotal_amount': 'Monto Subtotal',
+        'sales.discount_amount': 'Monto de Descuento',
+        'sales.manual_total': 'Total Manual (Opcional)',
+        'sales.manual_total_placeholder': 'Calc. Auto',
+        'sales.manual_total_help': 'El valor ingresado será el monto final',
+        'sales.final_total': 'Monto Total Final',
 
         // Inventario
         'inventory.current': 'Stock Actual',
@@ -861,6 +879,14 @@ function translatePage() {
             } else {
                 element.textContent = translation;
             }
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-i18n-placeholder');
+        const translation = translations[currentLanguage][key];
+        if (translation) {
+            element.placeholder = translation;
         }
     });
 }

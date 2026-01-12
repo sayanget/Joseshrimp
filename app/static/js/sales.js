@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const itemsContainer = document.getElementById('itemsContainer');
     const addItemBtn = document.getElementById('addItemBtn');
     const totalKgSpan = document.getElementById('totalKg');
+    const subtotalAmountSpan = document.getElementById('subtotalAmount');
+    const discountInput = document.getElementById('discountAmount');
+    const manualTotalInput = document.getElementById('manualTotalAmount');
+    const finalTotalSpan = document.getElementById('finalTotalAmount');
 
     // 客户选择变化时检查信用
     customerSelect.addEventListener('change', () => {
@@ -55,17 +59,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 计算总计
     const calculateTotal = () => {
-        let total = 0;
+        let totalItemsKg = 0;
+        let totalSubtotalAmount = 0;
+
         document.querySelectorAll('.item-row').forEach(row => {
-            const subtotal = parseFloat(row.querySelector('.subtotal-kg').value) || 0;
-            total += subtotal;
+            const subtotalKg = parseFloat(row.querySelector('.subtotal-kg').value) || 0;
+            totalItemsKg += subtotalKg;
+
+            // Calculate row amount for display purposes and total amount calculation
+            const specSelect = row.querySelector('.spec-select');
+            const productSelect = row.querySelector('.product-select');
+            const boxQty = parseFloat(row.querySelector('.box-qty').value) || 0;
+            const extraKg = parseFloat(row.querySelector('.extra-kg').value) || 0;
+            // Note: unit price logic here is simplified for frontend display. 
+            // Real accurate calculation happens at backend.
+            // But we need strict consistency if we show "Subtotal Amount".
+
+            // To properly calculate amount on frontend, we need unit price data.
+            // Let's get it from product data attributes based on payment type.
+            const paymentType = paymentSelect.value;
+            const selectedProductOption = productSelect.options[productSelect.selectedIndex];
+
+            let unitPrice = 0;
+            if (selectedProductOption && selectedProductOption.value) {
+                if (paymentType === '现金') {
+                    unitPrice = parseFloat(selectedProductOption.dataset.cashPrice) || 0;
+                } else {
+                    unitPrice = parseFloat(selectedProductOption.dataset.creditPrice) || 0;
+                }
+            }
+
+            // Recalculate subtotal kg for this row just to be sure (it's already in input value but let's be safe)
+            // Actually, rely on the input value which is calculated by calculateSubtotal(row)
+
+            const rowAmount = subtotalKg * unitPrice;
+            totalSubtotalAmount += rowAmount;
         });
-        totalKgSpan.textContent = utils.formatNumber(total, 3);
+
+        totalKgSpan.textContent = utils.formatNumber(totalItemsKg, 3);
+        subtotalAmountSpan.textContent = '$' + utils.formatNumber(totalSubtotalAmount, 2);
+
+        // Calculate Final Total
+        const discount = parseFloat(discountInput.value) || 0;
+        const manualTotal = parseFloat(manualTotalInput.value);
+
+        let finalTotal = 0;
+        if (!isNaN(manualTotal)) {
+            finalTotal = manualTotal;
+        } else {
+            finalTotal = totalSubtotalAmount - discount;
+        }
+
+        // Prevent negative total
+        if (finalTotal < 0) finalTotal = 0;
+
+        finalTotalSpan.textContent = '$' + utils.formatNumber(finalTotal, 2);
     };
+
+    // Listen for changes in discount or manual total
+    discountInput.addEventListener('input', calculateTotal);
+    manualTotalInput.addEventListener('input', calculateTotal);
 
     // 为所有明细行绑定事件
     const bindItemEvents = (row) => {
         row.querySelector('.spec-select').addEventListener('change', () => calculateSubtotal(row));
+        row.querySelector('.product-select').addEventListener('change', () => calculateSubtotal(row)); // Product change affects price -> amount
         row.querySelector('.box-qty').addEventListener('input', () => calculateSubtotal(row));
         row.querySelector('.extra-kg').addEventListener('input', () => calculateSubtotal(row));
 
@@ -145,6 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     customer_id: customerId,
                     payment_type: paymentType,
                     items: items,
+                    discount: parseFloat(discountInput.value) || 0,
+                    manual_total_amount: manualTotalInput.value ? parseFloat(manualTotalInput.value) : null,
                     created_by: 'Jose Burgueno'
                 })
             });

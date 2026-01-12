@@ -30,7 +30,7 @@ class SaleService:
         return f'{prefix}{new_seq:03d}'
     
     @staticmethod
-    def create_sale(customer_id, payment_type, items_data, created_by, sale_time=None):
+    def create_sale(customer_id, payment_type, items_data, created_by, discount=0, manual_total_amount=None, sale_time=None):
         """
         创建销售单
         
@@ -39,6 +39,8 @@ class SaleService:
             payment_type: 支付方式
             items_data: 明细数据 [{'spec_id': 1, 'box_qty': 2, 'extra_kg': 5}, ...]
             created_by: 创建人
+            discount: 折扣金额
+            manual_total_amount: 手动设置的总金额
             sale_time: 销售时间（可选，默认当前时间）
             
         Returns:
@@ -73,6 +75,8 @@ class SaleService:
             customer_id=customer_id,
             payment_type=payment_type,
             payment_status=payment_status,
+            discount=discount,
+            manual_total_amount=manual_total_amount,
             created_by=created_by
         )
         db.session.add(sale)
@@ -136,11 +140,18 @@ class SaleService:
         # 从数据库查询确保获取最新数据
         total_kg = db.session.query(func.sum(SaleItem.subtotal_kg))\
             .filter(SaleItem.sale_id == sale.id).scalar() or 0
-        total_amount = db.session.query(func.sum(SaleItem.total_amount))\
+        calculated_subtotal_amount = db.session.query(func.sum(SaleItem.total_amount))\
             .filter(SaleItem.sale_id == sale.id).scalar() or 0
         
         sale.total_kg = total_kg
-        sale.total_amount = total_amount
+        
+        # 计算最终金额
+        # 如果有手动金额，直接使用
+        if manual_total_amount is not None:
+             sale.total_amount = manual_total_amount
+        else:
+             # 否则使用计算金额减去折扣
+             sale.total_amount = calculated_subtotal_amount - (discount or 0)
         
         
         # 记录审计日志

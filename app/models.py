@@ -264,6 +264,8 @@ class Sale(db.Model):
     payment_type = db.Column(db.String(20), nullable=False)
     total_kg = db.Column(db.Numeric(12, 3), default=0, nullable=False)
     total_amount = db.Column(db.Numeric(12, 2), default=0, nullable=False)  # 总金额
+    discount = db.Column(db.Numeric(12, 2), default=0)  # 折扣金额
+    manual_total_amount = db.Column(db.Numeric(12, 2))  # 手动设置的总金额（覆盖计算值）
     payment_status = db.Column(db.String(20), default='unpaid', nullable=False)  # 收款状态：unpaid/partial/paid
     status = db.Column(db.String(20), default='active', nullable=False)
     void_reason = db.Column(db.Text)
@@ -296,6 +298,8 @@ class Sale(db.Model):
             'payment_status': self.payment_status,
             'total_kg': float(self.total_kg),
             'total_amount': float(self.total_amount),
+            'discount': float(self.discount or 0),
+            'manual_total_amount': float(self.manual_total_amount) if self.manual_total_amount is not None else None,
             'status': self.status,
             'created_by': self.created_by,
             'created_at': self.created_at.isoformat() if self.created_at else None

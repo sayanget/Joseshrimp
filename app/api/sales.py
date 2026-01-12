@@ -72,6 +72,8 @@ def create_sale():
             customer_id=data['customer_id'],
             payment_type=data['payment_type'],
             items_data=data['items'],
+            discount=data.get('discount', 0),
+            manual_total_amount=data.get('manual_total_amount'),
             created_by=data.get('created_by', 'system')
         )
         
