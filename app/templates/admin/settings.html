@@ -135,6 +135,22 @@
             data.items.forEach(memo => {
                 const li = document.createElement('li');
                 li.className = `list-group-item d-flex justify-content-between align-items-center ${memo.is_completed ? 'bg-light' : ''}`;
+
+                // 构建关联信息徽章
+                let referenceBadge = '';
+                if (memo.reference_details) {
+                    const ref = memo.reference_details;
+                    if (ref.type === 'sale') {
+                        referenceBadge = `<span class="badge bg-primary me-2" title="关联销售单">
+                            <i class="bi bi-cart"></i> ${ref.customer_name} - $${ref.amount.toFixed(2)}
+                        </span>`;
+                    } else if (ref.type === 'purchase') {
+                        referenceBadge = `<span class="badge bg-success me-2" title="关联采购单">
+                            <i class="bi bi-box"></i> ${ref.supplier_name} - $${ref.amount.toFixed(2)}
+                        </span>`;
+                    }
+                }
+
                 li.innerHTML = `
                     <div class="form-check flex-grow-1">
                         <input class="form-check-input" type="checkbox" 
@@ -146,7 +162,7 @@
                             title="点击编辑"
                             style="cursor: pointer;"
                             onclick="startEditMemo(${memo.id}, '${memo.content.replace(/'/g, "\\'")}', this)">
-                            ${memo.content}
+                            ${referenceBadge}${memo.content}
                         </label>
                     </div>
                     <button class="btn btn-link text-danger btn-sm p-0 ms-2" onclick="deleteMemo(${memo.id})">

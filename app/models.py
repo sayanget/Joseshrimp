@@ -177,21 +177,52 @@ class Memo(db.Model):
     memo_date = db.Column(db.Date, nullable=False)
     is_completed = db.Column(db.Boolean, default=False, nullable=False)
     active = db.Column(db.Boolean, default=True, nullable=False)
+    reference_type = db.Column(db.String(20))  # 'sale' or 'purchase'
+    reference_id = db.Column(db.String(50))
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
     updated_by = db.Column(db.String(50))
     
     def to_dict(self):
-        return {
+        result = {
             'id': self.id,
             'content': self.content,
             'memo_date': self.memo_date.isoformat() if self.memo_date else None,
             'is_completed': self.is_completed,
             'active': self.active,
             'created_at': self.created_at.isoformat() if self.created_at else None,
-            'created_by': self.created_by
+            'created_by': self.created_by,
+            'reference_type': self.reference_type,
+            'reference_id': self.reference_id
         }
+        
+        # 如果有关联，获取关联详情
+        if self.reference_type and self.reference_id:
+            if self.reference_type == 'sale':
+                sale = Sale.query.get(self.reference_id)
+                if sale:
+                    result['reference_details'] = {
+                        'type': 'sale',
+                        'id': sale.id,
+                        'customer_name': sale.customer.name if sale.customer else 'Unknown',
+                        'date': sale.sale_time.isoformat() if sale.sale_time else None,
+                        'amount': float(sale.total_amount) if sale.total_amount else 0,
+                        'weight': float(sale.total_kg) if sale.total_kg else 0
+                    }
+            elif self.reference_type == 'purchase':
+                purchase = Purchase.query.get(self.reference_id)
+                if purchase:
+                    result['reference_details'] = {
+                        'type': 'purchase',
+                        'id': purchase.id,
+                        'supplier_name': purchase.supplier,
+                        'date': purchase.purchase_time.isoformat() if purchase.purchase_time else None,
+                        'amount': float(purchase.total_amount) if purchase.total_amount else 0,
+                        'weight': float(purchase.total_weight) if purchase.total_weight else 0
+                    }
+        
+        return result
     
     def __repr__(self):
         return f'<Memo {self.id}>'

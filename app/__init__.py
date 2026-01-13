@@ -199,6 +199,8 @@ def run_migrations():
                         memo_date DATE NOT NULL,
                         is_completed BOOLEAN NOT NULL DEFAULT FALSE,
                         active BOOLEAN NOT NULL DEFAULT TRUE,
+                        reference_type VARCHAR(20) NULL,
+                        reference_id VARCHAR(50) NULL,
                         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         created_by VARCHAR(50) NOT NULL,
                         updated_at TIMESTAMP NULL,
@@ -216,6 +218,19 @@ def run_migrations():
             except Exception as e:
                 logger.warning(f"Could not create memo table: {e}")
                 db.session.rollback()
+        else:
+            # 检查memo表是否有reference字段
+            columns = [col['name'] for col in inspector.get_columns('memo')]
+            if 'reference_type' not in columns:
+                logger.info("Adding reference fields to memo table...")
+                try:
+                    db.session.execute(text("ALTER TABLE memo ADD COLUMN reference_type VARCHAR(20) NULL"))
+                    db.session.execute(text("ALTER TABLE memo ADD COLUMN reference_id VARCHAR(50) NULL"))
+                    db.session.commit()
+                    logger.info("✓ Memo reference fields added successfully")
+                except Exception as e:
+                    logger.warning(f"Could not add memo reference fields: {e}")
+                    db.session.rollback()
         
         # 检查sale表是否存在discount和manual_total_amount列
         if 'sale' in existing_tables:

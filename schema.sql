@@ -188,6 +188,8 @@ CREATE TABLE IF NOT EXISTS memo (
     memo_date DATE NOT NULL,                         -- 日期
     is_completed BOOLEAN NOT NULL DEFAULT 0,         -- 是否完成
     active BOOLEAN NOT NULL DEFAULT 1,               -- 是否启用（软删除）
+    reference_type VARCHAR(20) NULL,                 -- 关联类型: 'sale' 或 'purchase'
+    reference_id VARCHAR(50) NULL,                   -- 关联记录ID
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(50) NOT NULL,
     updated_at DATETIME NULL,

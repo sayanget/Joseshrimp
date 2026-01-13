@@ -233,6 +233,8 @@ def create_memo():
         memo = Memo(
             content=data['content'],
             memo_date=memo_date,
+            reference_type=data.get('reference_type'),
+            reference_id=data.get('reference_id'),
             created_by=data.get('created_by', 'admin')
         )
         db.session.add(memo)
