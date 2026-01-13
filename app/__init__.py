@@ -188,6 +188,35 @@ def run_migrations():
                 logger.warning(f"Could not create remittance table: {e}")
                 db.session.rollback()
         
+        # 检查并创建memo表
+        if 'memo' not in existing_tables:
+            logger.info("Creating memo table...")
+            try:
+                db.session.execute(text("""
+                    CREATE TABLE memo (
+                        id SERIAL PRIMARY KEY,
+                        content TEXT NOT NULL,
+                        memo_date DATE NOT NULL,
+                        is_completed BOOLEAN NOT NULL DEFAULT FALSE,
+                        active BOOLEAN NOT NULL DEFAULT TRUE,
+                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        created_by VARCHAR(50) NOT NULL,
+                        updated_at TIMESTAMP NULL,
+                        updated_by VARCHAR(50) NULL
+                    )
+                """))
+                
+                # 创建索引
+                db.session.execute(text("CREATE INDEX idx_memo_date ON memo(memo_date)"))
+                db.session.execute(text("CREATE INDEX idx_memo_active ON memo(active)"))
+                db.session.execute(text("CREATE INDEX idx_memo_created_at ON memo(created_at)"))
+                
+                db.session.commit()
+                logger.info("✓ Memo table created successfully")
+            except Exception as e:
+                logger.warning(f"Could not create memo table: {e}")
+                db.session.rollback()
+        
         # 检查sale表是否存在discount和manual_total_amount列
         if 'sale' in existing_tables:
             columns = [col['name'] for col in inspector.get_columns('sale')]
