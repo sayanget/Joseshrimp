@@ -5,8 +5,32 @@
 {% block content %}
 <!-- 页面标题 -->
 <div class="row mb-4">
-    <div class="col-12">
+    <div class="col-md-6">
         <h2><i class="bi bi-speedometer2"></i> <span data-i18n="home.title">系统概览</span></h2>
+    </div>
+    <div class="col-md-6">
+        <!-- 快速日期选择器 -->
+        <div class="card border-info">
+            <div class="card-body py-2">
+                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div class="me-3 mb-2 mb-md-0">
+                        <small class="text-muted"><i class="bi bi-calendar-check"></i> <span
+                                data-i18n="home.quick_date_select">快速查看日销售</span></small>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewDailySales('today')">
+                            <i class="bi bi-calendar-day"></i> <span data-i18n="home.today">今天</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="viewDailySales('yesterday')">
+                            <i class="bi bi-calendar-minus"></i> <span data-i18n="home.yesterday">昨天</span>
+                        </button>
+                        <input type="date" class="form-control form-control-sm" id="customDatePicker"
+                            style="width: auto; display: inline-block;" onchange="viewDailySales('custom')"
+                            title="选择日期">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -155,4 +179,129 @@
         </div>
     </div>
 </div>
+
+<script>
+    // 快速日期选择功能 - 动态更新数据
+    let currentDisplayDate = null;
+
+    function viewDailySales(type) {
+        let date;
+        const today = new Date();
+
+        if (type === 'today') {
+            date = today;
+        } else if (type === 'yesterday') {
+            date = new Date(today);
+            date.setDate(date.getDate() - 1);
+        } else if (type === 'custom') {
+            const customDate = document.getElementById('customDatePicker').value;
+            if (!customDate) {
+                alert('请选择日期');
+                return;
+            }
+            date = new Date(customDate);
+        }
+
+        // 格式化日期为 YYYY-MM-DD
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+
+        // 保存当前显示的日期
+        currentDisplayDate = formattedDate;
+
+        // 更新页面标题显示的日期
+        updateDateDisplay(formattedDate);
+
+        // 通过AJAX获取数据并更新卡片
+        fetchAndUpdateSalesData(formattedDate);
+    }
+
+    function updateDateDisplay(dateStr) {
+        const titleElement = document.querySelector('h2 span[data-i18n="home.title"]');
+        const today = new Date().toISOString().split('T')[0];
+
+        if (dateStr === today) {
+            titleElement.textContent = titleElement.getAttribute('data-original-text') || '系统概览';
+        } else {
+            if (!titleElement.getAttribute('data-original-text')) {
+                titleElement.setAttribute('data-original-text', titleElement.textContent);
+            }
+            titleElement.textContent = `${titleElement.getAttribute('data-original-text')} - ${dateStr}`;
+        }
+    }
+
+    function fetchAndUpdateSalesData(dateStr) {
+        // 显示加载状态
+        showLoading(true);
+
+        // 调用API获取数据
+        fetch(`/api/sales-summary/${dateStr}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateSalesCards(data.summary);
+                } else {
+                    alert('获取数据失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('获取数据失败，请稍后重试');
+            })
+            .finally(() => {
+                showLoading(false);
+            });
+    }
+
+    function updateSalesCards(summary) {
+        // 更新今日订单卡片
+        document.querySelector('.bg-primary h2').textContent = summary.order_count || 0;
+
+        // 更新今日销售卡片
+        const salesCard = document.querySelectorAll('.bg-success h3');
+        if (salesCard.length >= 2) {
+            salesCard[0].textContent = '$' + (summary.total_amount || 0).toFixed(2);
+            salesCard[1].textContent = (summary.total_kg || 0).toFixed(2);
+        }
+
+        // 更新现金销售卡片
+        const cashCard = document.querySelectorAll('.bg-info h3');
+        if (cashCard.length >= 2) {
+            cashCard[0].textContent = '$' + (summary.cash_received_amount || 0).toFixed(2);
+            cashCard[1].textContent = (summary.cash_kg || 0).toFixed(2);
+        }
+
+        // 更新信用销售卡片
+        const creditCard = document.querySelectorAll('.bg-warning h3');
+        if (creditCard.length >= 2) {
+            creditCard[0].textContent = '$' + (summary.credit_outstanding_amount || 0).toFixed(2);
+            creditCard[1].textContent = (summary.credit_kg || 0).toFixed(2);
+        }
+    }
+
+    function showLoading(isLoading) {
+        const cards = document.querySelectorAll('.card.text-white');
+        cards.forEach(card => {
+            if (isLoading) {
+                card.style.opacity = '0.6';
+            } else {
+                card.style.opacity = '1';
+            }
+        });
+    }
+
+    // 设置日期选择器的默认值为今天
+    document.addEventListener('DOMContentLoaded', function () {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        document.getElementById('customDatePicker').value = `${year}-${month}-${day}`;
+
+        // 保存当前日期
+        currentDisplayDate = `${year}-${month}-${day}`;
+    });
+</script>
 {% endblock %}

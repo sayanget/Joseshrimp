@@ -53,8 +53,66 @@ const utils = {
 // 全局变量
 window.utils = utils;
 
+// 主题切换功能
+const themeToggle = {
+    // 获取当前主题
+    getTheme: () => {
+        return localStorage.getItem('theme') || 'light';
+    },
+
+    // 设置主题
+    setTheme: (theme) => {
+        const html = document.documentElement;
+        const themeIcon = document.getElementById('themeIcon');
+
+        // 添加过渡效果
+        html.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+
+        // 设置主题
+        html.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+
+        // 更新图标
+        if (themeIcon) {
+            if (theme === 'dark') {
+                themeIcon.className = 'bi bi-sun-fill';
+            } else {
+                themeIcon.className = 'bi bi-moon-stars';
+            }
+        }
+
+        // 移除过渡效果（避免影响其他动画）
+        setTimeout(() => {
+            html.style.transition = '';
+        }, 300);
+    },
+
+    // 切换主题
+    toggle: () => {
+        const currentTheme = themeToggle.getTheme();
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        themeToggle.setTheme(newTheme);
+    },
+
+    // 初始化
+    init: () => {
+        // 从localStorage加载主题
+        const savedTheme = themeToggle.getTheme();
+        themeToggle.setTheme(savedTheme);
+
+        // 绑定切换按钮事件
+        const toggleButton = document.getElementById('themeToggle');
+        if (toggleButton) {
+            toggleButton.addEventListener('click', themeToggle.toggle);
+        }
+    }
+};
+
 // 页面加载完成后执行
 document.addEventListener('DOMContentLoaded', () => {
+    // 初始化主题
+    themeToggle.init();
+
     // 初始化所有tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));

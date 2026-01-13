@@ -34,6 +34,9 @@ const translations = {
         'home.view_reports': '查看报表',
         'home.received_amount': '已入账',
         'home.outstanding_amount': '未入账',
+        'home.quick_date_select': '快速查看日销售',
+        'home.today': '今天',
+        'home.yesterday': '昨天',
 
         // 通用
         'common.search': '查询',
@@ -335,6 +338,9 @@ const translations = {
         'home.view_reports': 'View Reports',
         'home.received_amount': 'Received',
         'home.outstanding_amount': 'Outstanding',
+        'home.quick_date_select': 'Quick Daily Sales',
+        'home.today': 'Today',
+        'home.yesterday': 'Yesterday',
 
         // Common
         'common.search': 'Search',
@@ -633,6 +639,9 @@ const translations = {
         'home.view_reports': 'Ver Informes',
         'home.received_amount': 'Recibido',
         'home.outstanding_amount': 'Pendiente',
+        'home.quick_date_select': 'Ver Ventas Diarias',
+        'home.today': 'Hoy',
+        'home.yesterday': 'Ayer',
 
         // Común
         'common.search': 'Buscar',
