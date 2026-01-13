@@ -56,10 +56,222 @@
         <li><strong>价格快照：</strong>每个订单在创建时会保存当时的价格，确保历史数据准确性</li>
     </ul>
 </div>
+
+<!-- 系统备忘录 -->
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-sticky"></i>
+            <span data-i18n="admin.system_memo">系统备忘录</span>
+        </h5>
+        <input type="date" id="memoDate" class="form-control form-control-sm" style="width: 150px;">
+    </div>
+    <div class="card-body">
+        <!-- 添加备忘录 -->
+        <div class="input-group mb-3">
+            <input type="text" id="newMemoInput" class="form-control" placeholder="输入备忘录内容..."
+                data-i18n-placeholder="admin.memo_placeholder">
+            <button class="btn btn-primary" type="button" onclick="addMemo()">
+                <i class="bi bi-plus-lg"></i> <span data-i18n="common.add">添加</span>
+            </button>
+        </div>
+
+        <!-- 备忘录列表 -->
+        <ul class="list-group" id="memoList">
+            <!-- 动态通过 JS 加载 -->
+        </ul>
+        <div id="memoLoading" class="text-center text-muted py-3" style="display: none;">
+            <div class="spinner-border spinner-border-sm" role="status"></div> Loading...
+        </div>
+        <div id="memoEmpty" class="text-center text-muted py-3" style="display: none;">
+            <i class="bi bi-inbox"></i> <span data-i18n="common.no_data">暂无数据</span>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function () {
+        // 设置日期选择器为今天
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('memoDate').value = today;
+
+        // 加载备忘录
+        loadMemos();
+
+        // 绑定日期变更事件
+        document.getElementById('memoDate').addEventListener('change', loadMemos);
+
+        // 绑定回车键事件
+        document.getElementById('newMemoInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                addMemo();
+            }
+        });
+    });
+
+    // 加载备忘录
+    async function loadMemos() {
+        const date = document.getElementById('memoDate').value;
+        const listEl = document.getElementById('memoList');
+        const loadingEl = document.getElementById('memoLoading');
+        const emptyEl = document.getElementById('memoEmpty');
+
+        listEl.innerHTML = '';
+        loadingEl.style.display = 'block';
+        emptyEl.style.display = 'none';
+
+        try {
+            const data = await utils.apiRequest(`/api/admin/memos?date=${date}`);
+
+            loadingEl.style.display = 'none';
+            if (data.items.length === 0) {
+                emptyEl.style.display = 'block';
+                return;
+            }
+
+            data.items.forEach(memo => {
+                const li = document.createElement('li');
+                li.className = `list-group-item d-flex justify-content-between align-items-center ${memo.is_completed ? 'bg-light' : ''}`;
+                li.innerHTML = `
+                    <div class="form-check flex-grow-1">
+                        <input class="form-check-input" type="checkbox" 
+                            id="memo-${memo.id}" 
+                            ${memo.is_completed ? 'checked' : ''}
+                            onchange="toggleMemo(${memo.id}, this.checked)">
+                        <label class="form-check-label ${memo.is_completed ? 'text-decoration-line-through text-muted' : ''}" 
+                            for="memo-${memo.id}"
+                            title="点击编辑"
+                            style="cursor: pointer;"
+                            onclick="startEditMemo(${memo.id}, '${memo.content.replace(/'/g, "\\'")}', this)">
+                            ${memo.content}
+                        </label>
+                    </div>
+                    <button class="btn btn-link text-danger btn-sm p-0 ms-2" onclick="deleteMemo(${memo.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                `;
+                listEl.appendChild(li);
+            });
+
+        } catch (error) {
+            loadingEl.style.display = 'none';
+            utils.showAlert('加载备忘录失败: ' + error.message, 'danger');
+        }
+    }
+
+    // 开始编辑备忘录
+    function startEditMemo(id, currentContent, labelEl) {
+        // 创建输入框
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-control form-control-sm';
+        input.value = currentContent;
+
+        // 替换标签
+        labelEl.parentNode.replaceChild(input, labelEl);
+        input.focus();
+
+        // 失去焦点或回车时保存
+        input.addEventListener('blur', () => saveMemoEdit(id, input.value, currentContent));
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveMemoEdit(id, input.value, currentContent);
+            }
+        });
+    }
+
+    // 保存编辑
+    async function saveMemoEdit(id, newContent, oldContent) {
+        newContent = newContent.trim();
+
+        // 如果内容未改变或为空，重新加载列表恢复原样
+        if (!newContent || newContent === oldContent) {
+            loadMemos();
+            return;
+        }
+
+        try {
+            await utils.apiRequest(`/api/admin/memos/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    content: newContent,
+                    updated_by: 'admin'
+                })
+            });
+
+            loadMemos();
+
+        } catch (error) {
+            utils.showAlert('更新失败: ' + error.message, 'danger');
+            loadMemos();
+        }
+    }
+
+    // 添加备忘录
+    async function addMemo() {
+        const input = document.getElementById('newMemoInput');
+        const content = input.value.trim();
+        const date = document.getElementById('memoDate').value;
+
+        if (!content) return;
+
+        try {
+            await utils.apiRequest('/api/admin/memos', {
+                method: 'POST',
+                body: JSON.stringify({
+                    content: content,
+                    memo_date: date,
+                    created_by: 'admin' // 实际应用中后端会处理
+                })
+            });
+
+            input.value = '';
+            loadMemos();
+
+        } catch (error) {
+            utils.showAlert('添加失败: ' + error.message, 'danger');
+        }
+    }
+
+    // 切换备忘录状态
+    async function toggleMemo(id, isCompleted) {
+        try {
+            await utils.apiRequest(`/api/admin/memos/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    is_completed: isCompleted,
+                    updated_by: 'admin'
+                })
+            });
+
+            loadMemos(); // 刷新列表以更新样式
+
+        } catch (error) {
+            utils.showAlert('更新状态失败: ' + error.message, 'danger');
+            // 回滚checkbox状态
+            loadMemos();
+        }
+    }
+
+    // 删除备忘录
+    async function deleteMemo(id) {
+        if (!confirm('确定要删除这条备忘录吗？')) return;
+
+        try {
+            await utils.apiRequest(`/api/admin/memos/${id}`, {
+                method: 'DELETE'
+            });
+
+            loadMemos();
+
+        } catch (error) {
+            utils.showAlert('删除失败: ' + error.message, 'danger');
+        }
+    }
+
     async function savePrices() {
         const cashPrice = document.getElementById('priceCash').value;
         const creditPrice = document.getElementById('priceCredit').value;

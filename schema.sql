@@ -179,6 +179,27 @@ CREATE TABLE IF NOT EXISTS inventory_check (
 CREATE INDEX idx_inventory_check_time ON inventory_check(check_time);
 
 -- ============================================================================
+-- 8. 备忘录表（memo）
+-- 用途：系统设置页面简单的备忘录/待办事项
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS memo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,                           -- 内容
+    memo_date DATE NOT NULL,                         -- 日期
+    is_completed BOOLEAN NOT NULL DEFAULT 0,         -- 是否完成
+    active BOOLEAN NOT NULL DEFAULT 1,               -- 是否启用（软删除）
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(50) NOT NULL,
+    updated_at DATETIME NULL,
+    updated_by VARCHAR(50) NULL
+);
+
+-- 索引
+CREATE INDEX idx_memo_date ON memo(memo_date);
+CREATE INDEX idx_memo_active ON memo(active);
+CREATE INDEX idx_memo_created_at ON memo(created_at);
+
+-- ============================================================================
 -- 触发器部分
 -- ============================================================================
 

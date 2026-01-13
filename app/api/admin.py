@@ -186,6 +186,111 @@ def update_system_prices():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# ==================== 备忘录管理 ====================
+
+@admin_api.route('/memos', methods=['GET'])
+def get_memos():
+    """获取备忘录列表"""
+    try:
+        from app.models import Memo
+        date_str = request.args.get('date')
+        
+        query = Memo.query.filter_by(active=True)
+        
+        if date_str:
+            try:
+                target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                query = query.filter(Memo.memo_date == target_date)
+            except ValueError:
+                # 如果日期格式错误，默认返回当天
+                query = query.filter(Memo.memo_date == datetime.utcnow().date())
+        else:
+            # 默认只显示今天的备忘录
+            query = query.filter(Memo.memo_date == datetime.utcnow().date())
+            
+        memos = query.order_by(Memo.created_at.desc()).all()
+        return jsonify({'items': [memo.to_dict() for memo in memos]})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_api.route('/memos', methods=['POST'])
+def create_memo():
+    """创建备忘录"""
+    try:
+        from app.models import Memo
+        data = request.get_json()
+        
+        if not data.get('content'):
+            return jsonify({'error': '内容不能为空'}), 400
+            
+        memo_date = datetime.utcnow().date()
+        if data.get('memo_date'):
+            try:
+                memo_date = datetime.strptime(data['memo_date'], '%Y-%m-%d').date()
+            except ValueError:
+                pass # Use default today if invalid
+        
+        memo = Memo(
+            content=data['content'],
+            memo_date=memo_date,
+            created_by=data.get('created_by', 'admin')
+        )
+        db.session.add(memo)
+        db.session.commit()
+        
+        return jsonify(memo.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@admin_api.route('/memos/<int:memo_id>', methods=['PUT'])
+def update_memo(memo_id):
+    """更新备忘录"""
+    try:
+        from app.models import Memo
+        memo = Memo.query.get(memo_id)
+        if not memo:
+            return jsonify({'error': '备忘录不存在'}), 404
+            
+        data = request.get_json()
+        
+        if 'content' in data:
+            memo.content = data['content']
+        if 'is_completed' in data:
+            memo.is_completed = data['is_completed']
+        if 'active' in data:
+            memo.active = data['active']
+        if 'updated_by' in data:
+            memo.updated_by = data['updated_by']
+            
+        memo.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify(memo.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@admin_api.route('/memos/<int:memo_id>', methods=['DELETE'])
+def delete_memo(memo_id):
+    """删除备忘录（软删除）"""
+    try:
+        from app.models import Memo
+        memo = Memo.query.get(memo_id)
+        if not memo:
+            return jsonify({'error': '备忘录不存在'}), 404
+            
+        memo.active = False
+        memo.updated_by = request.args.get('updated_by', 'admin')
+        memo.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({'message': 'Memo deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
 
 
 # ==================== 客户管理 ====================

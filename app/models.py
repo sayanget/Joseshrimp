@@ -168,6 +168,35 @@ class Product(db.Model):
         return f'<Product {self.name}>'
 
 
+class Memo(db.Model):
+    """备忘录表"""
+    __tablename__ = 'memo'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    memo_date = db.Column(db.Date, nullable=False)
+    is_completed = db.Column(db.Boolean, default=False, nullable=False)
+    active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_by = db.Column(db.String(50), nullable=False)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.String(50))
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'memo_date': self.memo_date.isoformat() if self.memo_date else None,
+            'is_completed': self.is_completed,
+            'active': self.active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'created_by': self.created_by
+        }
+    
+    def __repr__(self):
+        return f'<Memo {self.id}>'
+
+
 class Purchase(db.Model):
     """采购单主表"""
     __tablename__ = 'purchase'

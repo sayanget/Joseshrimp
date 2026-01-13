@@ -174,6 +174,11 @@
                     <a href="{{ url_for('reports.index') }}" class="btn btn-info btn-lg">
                         <i class="bi bi-graph-up"></i> <span data-i18n="home.view_reports">查看报表</span>
                     </a>
+                    {% if current_user.can('admin') %}
+                    <a href="{{ url_for('admin.system_settings') }}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-sticky"></i> <span data-i18n="admin.system_memo">系统备忘录</span>
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
