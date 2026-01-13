@@ -98,6 +98,23 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('memoDate').value = today;
 
+        // 检查是否有待处理的备忘（从其他页面复制过来的）
+        const pendingMemo = sessionStorage.getItem('pendingMemo');
+        if (pendingMemo) {
+            document.getElementById('newMemoInput').value = pendingMemo;
+            document.getElementById('newMemoInput').focus();
+            // 清除sessionStorage
+            sessionStorage.removeItem('pendingMemo');
+            // 显示提示
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-info alert-dismissible fade show';
+            alert.innerHTML = `
+                <i class="bi bi-info-circle"></i> 已从记录复制信息到备忘录，您可以编辑后点击"添加"保存
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.card-body').insertBefore(alert, document.querySelector('.card-body').firstChild);
+        }
+
         // 加载备忘录
         loadMemos();
 

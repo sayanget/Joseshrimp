@@ -47,10 +47,10 @@
                                 class="btn btn-sm btn-info">
                                 <i class="bi bi-eye"></i> <span data-i18n="common.view">查看</span>
                             </a>
-                            <button class="btn btn-sm btn-warning add-memo-btn" data-type="purchase"
+                            <button class="btn btn-sm btn-warning copy-to-memo-btn" data-type="purchase"
                                 data-id="{{ purchase.id }}" data-name="{{ purchase.supplier }}"
                                 data-date="{{ purchase.purchase_time.strftime('%Y-%m-%d %H:%M') }}"
-                                data-amount="{{ purchase.total_amount|default(0) }}" title="添加到备忘录">
+                                data-amount="{{ purchase.total_amount|default(0) }}" title="复制到备忘录">
                                 <i class="bi bi-sticky"></i>
                             </button>
                         </td>
@@ -170,45 +170,13 @@
     }
 </script>
 
-<!-- 添加到备忘录模态框 -->
-<div class="modal fade" id="memoModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">添加到备忘录</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">关联记录</label>
-                    <div id="memoReferenceInfo" class="alert alert-info"></div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">备忘内容</label>
-                    <textarea id="memoContent" class="form-control" rows="3" placeholder="输入备忘内容..."></textarea>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">日期</label>
-                    <input type="date" id="memoDateInput" class="form-control">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="button" class="btn btn-primary" onclick="saveMemo()">保存</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
-    let currentReference = {};
-
     // 使用事件委托处理备忘按钮点击
     document.addEventListener('DOMContentLoaded', function () {
         document.addEventListener('click', function (e) {
-            if (e.target.closest('.add-memo-btn')) {
-                const btn = e.target.closest('.add-memo-btn');
-                addToMemo(
+            if (e.target.closest('.copy-to-memo-btn')) {
+                const btn = e.target.closest('.copy-to-memo-btn');
+                copyToMemo(
                     btn.dataset.type,
                     btn.dataset.id,
                     btn.dataset.name,
@@ -219,64 +187,20 @@
         });
     });
 
-    function addToMemo(type, id, name, date, amount) {
-        currentReference = {
-            type: type,
-            id: id,
-            name: name,
-            date: date,
-            amount: amount
-        };
-
-        // 显示关联信息
-        const refInfo = document.getElementById('memoReferenceInfo');
+    function copyToMemo(type, id, name, date, amount) {
+        // 构建备忘录文本
+        let memoText = '';
         if (type === 'sale') {
-            refInfo.innerHTML = `<strong>销售单:</strong> ${id}<br><strong>客户:</strong> ${name}<br><strong>日期:</strong> ${date}<br><strong>金额:</strong> $${amount}`;
+            memoText = `销售单 ${id} - 客户: ${name} - 日期: ${date} - 金额: $${amount}`;
         } else {
-            refInfo.innerHTML = `<strong>采购单:</strong> ${id}<br><strong>供应商:</strong> ${name}<br><strong>日期:</strong> ${date}<br><strong>金额:</strong> $${amount}`;
+            memoText = `采购单 ${id} - 供应商: ${name} - 日期: ${date} - 金额: $${amount}`;
         }
 
-        // 设置默认日期为今天
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('memoDateInput').value = today;
-        document.getElementById('memoContent').value = '';
+        // 保存到sessionStorage，以便在设置页面读取
+        sessionStorage.setItem('pendingMemo', memoText);
 
-        // 显示模态框
-        const modal = new bootstrap.Modal(document.getElementById('memoModal'));
-        modal.show();
-    }
-
-    async function saveMemo() {
-        const content = document.getElementById('memoContent').value.trim();
-        const memoDate = document.getElementById('memoDateInput').value;
-
-        if (!content) {
-            alert('请输入备忘内容');
-            return;
-        }
-
-        try {
-            const response = await utils.apiRequest('/api/admin/memos', {
-                method: 'POST',
-                body: JSON.stringify({
-                    content: content,
-                    memo_date: memoDate,
-                    reference_type: currentReference.type,
-                    reference_id: currentReference.id,
-                    created_by: 'admin'
-                })
-            });
-
-            // 关闭模态框
-            const modal = bootstrap.Modal.getInstance(document.getElementById('memoModal'));
-            modal.hide();
-
-            // 显示成功消息
-            utils.showAlert('备忘录已添加', 'success');
-
-        } catch (error) {
-            utils.showAlert('添加失败: ' + error.message, 'danger');
-        }
+        // 跳转到系统设置页面
+        window.location.href = '/admin/settings';
     }
 </script>
 {% endblock %}
