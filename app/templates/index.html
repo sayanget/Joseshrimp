@@ -12,26 +12,27 @@
 
 <!-- 今日销售汇总 -->
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary">
-            <div class="card-body">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title">
                     <i class="bi bi-cart-check"></i> <span data-i18n="home.orders_today">今日订单</span>
                 </h5>
-                <h2 class="card-text">{{ (today_summary.order_count | default(0)) }}</h2>
+                <h2 class="card-text mb-0">{{ (today_summary.order_count | default(0)) }}</h2>
                 <p class="card-text"><small data-i18n="common.pieces">笔</small></p>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-success">
-            <div class="card-body">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title">
                     <i class="bi bi-graph-up"></i> <span data-i18n="home.sales_today">今日销售</span>
                 </h5>
-                <div class="row">
+                <div class="row text-center">
                     <div class="col-6 border-end">
                         <h3 class="card-text mb-0">${{ (today_summary.total_amount | default(0) | number(2)) }}</h3>
+                        <small>金额</small>
                     </div>
                     <div class="col-6">
                         <h3 class="card-text mb-0">{{ (today_summary.total_kg | default(0) | number) }}</h3>
@@ -41,13 +42,13 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info">
-            <div class="card-body">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title">
                     <i class="bi bi-cash"></i> <span data-i18n="home.cash_sales">现金销售</span>
                 </h5>
-                <div class="row">
+                <div class="row text-center">
                     <div class="col-6 border-end">
                         <p class="mb-0 small text-white-50" data-i18n="home.received_amount">已入账</p>
                         <a href="{{ url_for('sales.payment_details', payment_type='现金', payment_status='paid') }}"
@@ -65,13 +66,13 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-warning">
-            <div class="card-body">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title">
                     <i class="bi bi-credit-card"></i> <span data-i18n="home.credit_sales">信用销售</span>
                 </h5>
-                <div class="row">
+                <div class="row text-center">
                     <div class="col-6 border-end">
                         <p class="mb-0 small text-white-50" data-i18n="home.outstanding_amount">未入账</p>
                         <a href="{{ url_for('sales.payment_details', payment_type='Crédito', payment_status='unpaid') }}"
@@ -93,8 +94,8 @@
 
 <!-- 当前库存 -->
 <div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card {% if current_stock.warning %}border-danger{% endif %}">
+    <div class="col-md-6 mb-3">
+        <div class="card {% if current_stock.warning %}border-danger{% endif %} h-100">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="bi bi-box-seam"></i> <span data-i18n="home.current_stock">当前库存</span>
@@ -131,15 +132,15 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card">
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="bi bi-lightning"></i> <span data-i18n="home.quick_actions">快速操作</span>
                 </h5>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
+            <div class="card-body d-flex align-items-center">
+                <div class="d-grid gap-2 w-100">
                     <a href="{{ url_for('sales.create_sale') }}" class="btn btn-primary btn-lg">
                         <i class="bi bi-plus-circle"></i> <span data-i18n="home.create_sale">创建销售单</span>
                     </a>
