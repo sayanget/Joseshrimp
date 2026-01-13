@@ -63,6 +63,8 @@ const translations = {
         'common.prev': '上一页',
         'common.next': '下一页',
         'common.total': '共',
+        'common.margin': '毛利率',
+        'sales.breakdown': '销售构成',
 
         // 销售
         'sales.list': '销售单列表',
@@ -118,6 +120,11 @@ const translations = {
         'sales.status_unpaid': '未回款',
         'sales.payment_status': '收款状态',
         'sales.remittance_amount_hint': '请输入回款金额，不能超过未回款金额',
+        'sales.daily_profit': '当天利润',
+        'sales.daily_cash_income': '当天入账',
+        'sales.remittances_received': '回款金额',
+        'sales.total_cost': '总成本',
+        'sales.includes_remittances': '含回款',
         'common.notes': '备注',
 
         // 库存
@@ -357,6 +364,8 @@ const translations = {
         'common.prev': 'Previous',
         'common.next': 'Next',
         'common.total': '',
+        'common.margin': 'Margin',
+        'sales.breakdown': 'Sales Breakdown',
 
         // Sales
         'sales.list': 'Sales List',
@@ -412,6 +421,11 @@ const translations = {
         'sales.status_unpaid': 'Unpaid',
         'sales.payment_status': 'Payment Status',
         'sales.remittance_amount_hint': 'Enter remittance amount, cannot exceed unpaid amount',
+        'sales.daily_profit': 'Daily Profit',
+        'sales.daily_cash_income': 'Daily Cash Income',
+        'sales.remittances_received': 'Remittances Received',
+        'sales.total_cost': 'Total Cost',
+        'sales.includes_remittances': 'Incl. Remittances',
         'common.notes': 'Notes',
 
         // Inventory
@@ -648,6 +662,8 @@ const translations = {
         'common.prev': 'Anterior',
         'common.next': 'Siguiente',
         'common.total': '',
+        'common.margin': 'Margen',
+        'sales.breakdown': 'Desglose de Ventas',
 
         // Ventas
         'sales.list': 'Lista de Ventas',
@@ -703,6 +719,11 @@ const translations = {
         'sales.status_unpaid': 'No Pagado',
         'sales.payment_status': 'Estado de Pago',
         'sales.remittance_amount_hint': 'Ingrese el monto del cobro, no puede exceder el monto pendiente',
+        'sales.daily_profit': 'Ganancia Diaria',
+        'sales.daily_cash_income': 'Ingreso Diario en Efectivo',
+        'sales.remittances_received': 'Cobros Recibidos',
+        'sales.total_cost': 'Costo Total',
+        'sales.includes_remittances': 'Incl. Cobros',
         'common.notes': 'Notas',
 
         // Inventario

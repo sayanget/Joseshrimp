@@ -240,6 +240,73 @@ class ExcelExporter:
         
         return response
 
+    
+    @staticmethod
+    def export_daily_sales_detail(sales, summary, sale_date):
+        """导出日销售详情报表（包含利润信息）"""
+        wb, ws = ExcelExporter.create_workbook("Daily Detail")
+        
+        # 标题
+        ws['A1'] = f'Daily Sales Detail Report - {sale_date.strftime("%Y-%m-%d")}'
+        ws.merge_cells('A1:H1')
+        ws['A1'].font = Font(size=14, bold=True)
+        ws['A1'].alignment = Alignment(horizontal="center")
+        
+        # 汇总信息
+        ws.append([])
+        summary_fill = PatternFill(start_color="E7E6E6", end_color="E7E6E6", fill_type="solid")
+        summary_font = Font(bold=True)
+        
+        # 第一行汇总
+        ws.append(['Summary', '', '', '', '', '', '', ''])
+        ws.merge_cells(f'A3:H3')
+        ws['A3'].fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+        ws['A3'].font = Font(bold=True, color="FFFFFF", size=12)
+        ws['A3'].alignment = Alignment(horizontal="center")
+        
+        # 汇总数据
+        ws.append(['Total Orders:', len(sales), 'Total Weight (KG):', round(summary['total_kg'], 2), 
+                   'Total Amount ($):', round(summary['total_amount'], 2), '', ''])
+        ws.append(['Cash Sales:', f"{round(summary['cash_kg'], 2)} KG", 'Cash Amount:', f"${round(summary['cash_amount'], 2)}",
+                   'Credit Sales:', f"{round(summary['credit_kg'], 2)} KG", 'Credit Amount:', f"${round(summary['credit_amount'], 2)}"])
+        ws.append(['Total Cost ($):', round(summary['total_cost'], 2), 'Profit ($):', round(summary['profit'], 2),
+                   'Profit Margin (%):', round((summary['profit'] / summary['total_amount'] * 100) if summary['total_amount'] > 0 else 0, 1), '', ''])
+        ws.append(['Daily Cash Income ($):', round(summary['daily_cash_income'], 2), 'Remittances ($):', round(summary['remittances_amount'], 2),
+                   '', '', '', ''])
+        
+        # 设置汇总区域样式
+        for row in range(4, 8):
+            for col in range(1, 9):
+                cell = ws.cell(row=row, column=col)
+                cell.fill = summary_fill
+                if col % 2 == 1:  # 标签列
+                    cell.font = summary_font
+        
+        # 空行
+        ws.append([])
+        
+        # 销售明细表头
+        headers = ['Sale ID', 'Time', 'Customer', 'Payment Type', 'Total KG', 'Total Amount ($)', 'Payment Status', 'Created By']
+        ws.append(headers)
+        ExcelExporter.style_header(ws, row=9)
+        
+        # 销售明细数据
+        for sale in sales:
+            ws.append([
+                sale.id,
+                sale.sale_time.strftime('%H:%M:%S'),
+                sale.customer.name if sale.customer else 'N/A',
+                sale.payment_type,
+                round(float(sale.total_kg), 2),
+                round(float(sale.total_amount), 2),
+                sale.payment_status,
+                sale.created_by
+            ])
+        
+        ExcelExporter.auto_adjust_column_width(ws)
+        
+        return ExcelExporter.create_response(wb, f'daily_sales_detail_{sale_date.strftime("%Y%m%d")}.xlsx')
+
 def export_purchases_to_excel(purchases):
     """导出采购单列表"""
     wb, ws = ExcelExporter.create_workbook("Purchases")

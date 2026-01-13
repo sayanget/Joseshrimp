@@ -332,6 +332,8 @@ class SaleService:
             tuple: (销售记录列表, 汇总统计字典)
         """
         from datetime import datetime, timedelta
+        from app.models import Purchase, PurchaseItem, Remittance
+        from decimal import Decimal
         import logging
         
         logger = logging.getLogger(__name__)
@@ -355,16 +357,147 @@ class SaleService:
             logger.info(f"Sale {i+1}: ID={sale.id}, total_kg={sale.total_kg} (type={type(sale.total_kg).__name__}), float={float(sale.total_kg)}")
         
         # 计算汇总统计（显式转换为float以避免模板层面的Numeric类型问题）
+        total_kg = sum(float(sale.total_kg) for sale in sales)
+        total_amount = sum(float(sale.total_amount) for sale in sales)
+        cash_kg = sum(float(sale.total_kg) for sale in sales if sale.payment_type == '现金')
+        credit_kg = sum(float(sale.total_kg) for sale in sales if sale.payment_type == 'Crédito')
+        cash_amount = sum(float(sale.total_amount) for sale in sales if sale.payment_type == '现金')
+        credit_amount = sum(float(sale.total_amount) for sale in sales if sale.payment_type == 'Crédito')
+        
+        # 计算FIFO成本
+        total_cost = SaleService.calculate_daily_cost_fifo(sale_date, total_kg)
+        
+        # 计算当天销售的回款金额（回款计入销售日期，而非回款日期）
+        remittances_amount = SaleService.get_daily_remittances(sale_date)
+        
+        # 计算当天现金入账 = 现金销售 + 当天销售的回款
+        daily_cash_income = cash_amount + remittances_amount
+        
+        # 计算利润 = 总收入 - 总成本
+        profit = total_amount - total_cost
+        
         summary = {
-            'total_kg': sum(float(sale.total_kg) for sale in sales),
-            'total_amount': sum(float(sale.total_amount) for sale in sales),
-            'cash_kg': sum(float(sale.total_kg) for sale in sales if sale.payment_type == '现金'),
-            'credit_kg': sum(float(sale.total_kg) for sale in sales if sale.payment_type == 'Crédito'),
-            'cash_amount': sum(float(sale.total_amount) for sale in sales if sale.payment_type == '现金'),
-            'credit_amount': sum(float(sale.total_amount) for sale in sales if sale.payment_type == 'Crédito')
+            'total_kg': total_kg,
+            'total_amount': total_amount,
+            'cash_kg': cash_kg,
+            'credit_kg': credit_kg,
+            'cash_amount': cash_amount,
+            'credit_amount': credit_amount,
+            'total_cost': total_cost,
+            'profit': profit,
+            'remittances_amount': remittances_amount,
+            'daily_cash_income': daily_cash_income
         }
         
         logger.info(f"计算的汇总数据: {summary}")
         
         return sales, summary
+    
+    @staticmethod
+    def calculate_daily_cost_fifo(sale_date, total_kg_sold):
+        """
+        使用FIFO方法计算指定日期销售的成本
+        
+        Args:
+            sale_date: 销售日期 (date对象)
+            total_kg_sold: 当天销售的总重量
+            
+        Returns:
+            float: 总成本
+        """
+        from datetime import datetime
+        from app.models import Purchase, PurchaseItem
+        from decimal import Decimal
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        if total_kg_sold <= 0:
+            return 0.0
+        
+        # 获取销售日期之前或当天的所有采购记录，按时间升序排列（FIFO）
+        end_datetime = datetime.combine(sale_date, datetime.max.time())
+        
+        purchases = Purchase.query.filter(
+            Purchase.purchase_time <= end_datetime,
+            Purchase.status == 'active'
+        ).order_by(Purchase.purchase_time.asc()).all()
+        
+        logger.info(f"FIFO成本计算: 销售日期={sale_date}, 销售重量={total_kg_sold} KG")
+        logger.info(f"找到 {len(purchases)} 个采购记录用于成本计算")
+        
+        total_cost = Decimal('0')
+        remaining_kg = Decimal(str(total_kg_sold))
+        
+        # 按FIFO顺序计算成本
+        for purchase in purchases:
+            if remaining_kg <= 0:
+                break
+            
+            # 获取该采购单的所有明细
+            for item in purchase.items:
+                if remaining_kg <= 0:
+                    break
+                
+                # 计算该批次可用的重量
+                available_kg = item.kg
+                
+                # 取较小值：剩余需要的重量 vs 该批次可用重量
+                used_kg = min(remaining_kg, available_kg)
+                
+                # 计算该部分的成本
+                item_cost = used_kg * item.unit_price
+                total_cost += item_cost
+                
+                logger.info(f"  使用采购 {purchase.id} - {item.product_name}: {used_kg} KG @ ${item.unit_price}/KG = ${item_cost}")
+                
+                # 减少剩余需要计算的重量
+                remaining_kg -= used_kg
+        
+        if remaining_kg > 0:
+            logger.warning(f"警告: 还有 {remaining_kg} KG 无法匹配到采购记录，可能是库存不足")
+        
+        logger.info(f"FIFO总成本: ${total_cost}")
+        
+        return float(total_cost)
+    
+    @staticmethod
+    def get_daily_remittances(sale_date):
+        """
+        获取指定日期销售的回款总额
+        注意：回款计入销售日期，而非回款日期
+        
+        Args:
+            sale_date: 销售日期 (date对象)
+            
+        Returns:
+            float: 回款总额
+        """
+        from datetime import datetime
+        from app.models import Remittance
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        # 设置日期范围
+        start_datetime = datetime.combine(sale_date, datetime.min.time())
+        end_datetime = datetime.combine(sale_date, datetime.max.time())
+        
+        # 查询该日期销售的所有回款记录
+        # 通过关联Sale表，筛选sale_time在指定日期的销售单的回款
+        remittances = db.session.query(Remittance).join(
+            Sale, Remittance.sale_id == Sale.id
+        ).filter(
+            Sale.sale_time >= start_datetime,
+            Sale.sale_time <= end_datetime,
+            Sale.status == 'active'
+        ).all()
+        
+        total_remittances = sum(float(r.amount) for r in remittances)
+        
+        logger.info(f"日期 {sale_date} 的销售回款: 找到 {len(remittances)} 条回款记录, 总额 ${total_remittances}")
+        
+        return total_remittances
+
+
 

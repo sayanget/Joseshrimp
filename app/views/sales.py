@@ -76,6 +76,30 @@ def daily_sales(date):
         return redirect(url_for('reports.daily_sales'))
 
 
+@sales_bp.route('/daily/<date>/export')
+def export_daily_sales(date):
+    """导出指定日期的销售详情为Excel"""
+    from flask import redirect, url_for
+    from app.utils.excel_exporter import ExcelExporter
+    
+    try:
+        # 验证日期格式
+        sale_date = datetime.strptime(date, '%Y-%m-%d').date()
+        
+        # 获取当天的所有销售记录和汇总统计
+        sales, summary = SaleService.get_sales_by_date(sale_date)
+        
+        # 生成Excel文件
+        return ExcelExporter.export_daily_sales_detail(sales, summary, sale_date)
+    except ValueError as e:
+        flash('Invalid date format', 'error')
+        return redirect(url_for('reports.daily_sales'))
+    except Exception as e:
+        flash(f'Error exporting data: {str(e)}', 'error')
+        return redirect(url_for('reports.daily_sales'))
+
+
+
 @sales_bp.route('/payment-details')
 def payment_details():
     """收款明细页面"""
