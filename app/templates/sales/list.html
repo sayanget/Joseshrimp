@@ -81,7 +81,8 @@
                             <button class="btn btn-sm btn-warning copy-to-memo-btn" data-type="sale"
                                 data-id="{{ sale.id }}" data-name="{{ sale.customer.name }}"
                                 data-date="{{ sale.sale_time|datetime }}"
-                                data-amount="{{ sale.total_amount|default(0) }}" title="复制到备忘录">
+                                data-amount="{{ sale.total_amount|default(0) }}" title="复制到备忘录"
+                                data-i18n-title="admin.copy_to_memo">
                                 <i class="bi bi-sticky"></i>
                             </button>
                         </td>

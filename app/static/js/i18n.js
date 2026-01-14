@@ -303,7 +303,8 @@ const translations = {
         'admin.product_name': '商品名称',
         'admin.add_product': '添加商品',
         'admin.edit_product': '编辑商品',
-        'admin.activate': '启用'
+        'admin.activate': '启用',
+        'admin.copy_to_memo': '复制到备忘录'
     },
 
     en: {
@@ -606,7 +607,8 @@ const translations = {
         'admin.product_name': 'Product Name',
         'admin.add_product': 'Add Product',
         'admin.edit_product': 'Edit Product',
-        'admin.activate': 'Activate'
+        'admin.activate': 'Activate',
+        'admin.copy_to_memo': 'Copy to Memo'
     },
 
     es: {
@@ -909,7 +911,8 @@ const translations = {
         'admin.product_name': 'Nombre del Producto',
         'admin.add_product': 'Agregar Producto',
         'admin.edit_product': 'Editar Producto',
-        'admin.activate': 'Activar'
+        'admin.activate': 'Activar',
+        'admin.copy_to_memo': 'Copiar a Nota'
     }
 };
 
@@ -962,6 +965,15 @@ function translatePage() {
         const translation = translations[currentLanguage][key];
         if (translation) {
             element.placeholder = translation;
+        }
+    });
+
+    // Translate title attributes (tooltips)
+    document.querySelectorAll('[data-i18n-title]').forEach(element => {
+        const key = element.getAttribute('data-i18n-title');
+        const translation = translations[currentLanguage][key];
+        if (translation) {
+            element.title = translation;
         }
     });
 }

@@ -50,7 +50,8 @@
                             <button class="btn btn-sm btn-warning copy-to-memo-btn" data-type="purchase"
                                 data-id="{{ purchase.id }}" data-name="{{ purchase.supplier }}"
                                 data-date="{{ purchase.purchase_time.strftime('%Y-%m-%d %H:%M') }}"
-                                data-amount="{{ purchase.total_amount|default(0) }}" title="复制到备忘录">
+                                data-amount="{{ purchase.total_amount|default(0) }}"
+                                data-i18n-title="admin.copy_to_memo">
                                 <i class="bi bi-sticky"></i>
                             </button>
                         </td>
