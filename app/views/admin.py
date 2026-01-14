@@ -11,10 +11,17 @@ admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.before_request
 @login_required
-@admin_required
 def before_request():
-    """Protect all admin routes"""
-    pass
+    """Protect all admin routes except settings (for memos)"""
+    from flask import request
+    from flask_login import current_user
+    # Allow all authenticated users to access settings page for memos
+    if request.endpoint == 'admin.system_settings':
+        return
+    # All other admin routes require admin permission
+    if not current_user.can('admin'):
+        from flask import abort
+        abort(403)
 
 @admin_bp.route('/specs')
 def manage_specs():
