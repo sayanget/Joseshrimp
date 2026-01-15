@@ -7,6 +7,7 @@ from datetime import datetime
 from decimal import Decimal
 from sqlalchemy import func
 import json
+from app.utils import timezone
 
 
 class RemittanceService:
@@ -105,7 +106,7 @@ class RemittanceService:
             sale_id=sale_id,
             amount=amount_decimal,
             notes=notes,
-            remittance_time=remittance_time or datetime.utcnow(),
+            remittance_time=remittance_time or timezone.now(),
             created_by=created_by
         )
         db.session.add(remittance)
@@ -118,7 +119,7 @@ class RemittanceService:
             sale.payment_status = 'partial'
         
         sale.updated_by = created_by
-        sale.updated_at = datetime.utcnow()
+        sale.updated_at = timezone.now()
         
         # 6. 记录审计日志
         audit_log = AuditLog(

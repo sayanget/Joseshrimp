@@ -30,6 +30,9 @@ class Config:
     BABEL_SUPPORTED_LOCALES = ['zh', 'en', 'es']
     BABEL_TRANSLATION_DIRECTORIES = 'translations'
     
+    # 时区配置
+    TIMEZONE = 'America/Mazatlan'  # 墨西哥马萨特兰时区 (MST/MDT)
+    
     @staticmethod
     def init_app(app):
         pass

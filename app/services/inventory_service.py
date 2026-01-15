@@ -5,6 +5,7 @@ from app import db
 from app.models import StockMove, InventoryCheck
 from datetime import datetime, timedelta
 from sqlalchemy import func
+from app.utils import timezone
 
 class InventoryService:
     """库存业务逻辑"""
@@ -127,7 +128,7 @@ class InventoryService:
             move_type=move_type,
             source=source,
             kg=kg,
-            move_time=datetime.now(),
+            move_time=timezone.now(),
             notes=notes,
             created_by=created_by
         )
@@ -182,7 +183,7 @@ class InventoryService:
         Returns:
             list: 每日库存变动历史
         """
-        end_date = datetime.now()
+        end_date = timezone.now()
         start_date = end_date - timedelta(days=days)
         
         # 按日期分组统计
@@ -255,7 +256,7 @@ class InventoryService:
         
         # 创建盘点记录
         check = InventoryCheck(
-            check_time=datetime.now(),
+            check_time=timezone.now(),
             actual_kg=actual_kg,
             theoretical_kg=theoretical_kg,
             difference_kg=difference,

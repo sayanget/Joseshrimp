@@ -6,6 +6,7 @@ from flask_login import login_required
 from app.services.sale_service import SaleService
 from app.models import Customer, Spec, Product
 from datetime import datetime
+from app.utils import timezone
 
 from app.utils.decorators import permission_required
 
@@ -110,7 +111,7 @@ def payment_details():
     payment_status = request.args.get('payment_status')
     page = request.args.get('page', 1, type=int)
     
-    today = datetime.now().date()
+    today = timezone.get_current_date()
     query = Sale.query.filter(
         func.date(Sale.sale_time) == today,
         Sale.status == 'active'

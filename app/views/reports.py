@@ -6,6 +6,7 @@ from flask_login import login_required
 from app.services.report_service import ReportService
 from datetime import datetime, timedelta
 from app.utils.decorators import permission_required
+from app.utils import timezone
 
 reports_bp = Blueprint('reports', __name__)
 
@@ -20,7 +21,7 @@ def before_request():
 def index():
     """报表首页"""
     # 默认显示最近30天
-    date_to = datetime.now()
+    date_to = timezone.now()
     date_from = date_to - timedelta(days=30)
     
     return render_template('reports/index.html',

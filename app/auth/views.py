@@ -4,6 +4,7 @@ from app import login_manager, db
 from app.models import User
 from . import auth_bp
 from datetime import datetime
+from app.utils import timezone
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -26,7 +27,7 @@ def login():
                 return render_template('auth/login.html')
             
             login_user(user, remember=remember)
-            user.last_login = datetime.utcnow()
+            user.last_login = timezone.now()
             db.session.commit()
             
             next_page = request.args.get('next')

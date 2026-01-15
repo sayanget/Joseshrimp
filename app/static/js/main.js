@@ -108,10 +108,46 @@ const themeToggle = {
     }
 };
 
+// 时钟更新功能
+const clockUpdate = {
+    // 更新时钟显示
+    updateClock: () => {
+        const clockElement = document.getElementById('currentTime');
+        if (!clockElement) return;
+
+        // 获取当前时间（浏览器本地时间）
+        const now = new Date();
+
+        // 转换为马萨特兰时区 (America/Mazatlan)
+        const options = {
+            timeZone: 'America/Mazatlan',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+
+        const timeString = now.toLocaleTimeString('en-US', options);
+        clockElement.textContent = timeString;
+    },
+
+    // 初始化时钟
+    init: () => {
+        // 立即更新一次
+        clockUpdate.updateClock();
+
+        // 每秒更新一次
+        setInterval(clockUpdate.updateClock, 1000);
+    }
+};
+
 // 页面加载完成后执行
 document.addEventListener('DOMContentLoaded', () => {
     // 初始化主题
     themeToggle.init();
+
+    // 初始化时钟
+    clockUpdate.init();
 
     // 初始化所有tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

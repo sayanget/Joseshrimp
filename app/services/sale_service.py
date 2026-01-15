@@ -6,6 +6,7 @@ from app.models import Sale, SaleItem, Customer, Spec, StockMove, AuditLog, Prod
 from datetime import datetime
 from sqlalchemy import func
 import json
+from app.utils import timezone
 
 class SaleService:
     """销售业务逻辑"""
@@ -13,7 +14,7 @@ class SaleService:
     @staticmethod
     def generate_sale_id():
         """生成销售单号：SALE-YYYYMMDD-序号"""
-        today = datetime.now().strftime('%Y%m%d')
+        today = timezone.get_current_datetime_str('%Y%m%d')
         prefix = f'SALE-{today}-'
         
         # 查询今日最大序号
@@ -71,7 +72,7 @@ class SaleService:
         
         sale = Sale(
             id=SaleService.generate_sale_id(),
-            sale_time=sale_time or datetime.now(),
+            sale_time=sale_time or timezone.now(),
             customer_id=customer_id,
             payment_type=payment_type,
             payment_status=payment_status,
@@ -206,10 +207,10 @@ class SaleService:
         
         sale.status = 'void'
         sale.void_reason = void_reason
-        sale.void_time = datetime.now()
+        sale.void_time = timezone.now()
         sale.void_by = void_by
         sale.updated_by = void_by
-        sale.updated_at = datetime.now()
+        sale.updated_at = timezone.now()
         
         # 记录审计日志
         audit_log = AuditLog(
@@ -276,7 +277,7 @@ class SaleService:
     @staticmethod
     def get_today_summary():
         """获取今日销售汇总"""
-        today = datetime.now().date()
+        today = timezone.get_current_date()
         
         result = db.session.query(
             func.count(Sale.id).label('order_count'),

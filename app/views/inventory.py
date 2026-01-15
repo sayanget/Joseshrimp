@@ -9,6 +9,7 @@ from app.services.purchase_service import PurchaseService
 from app.models import InventoryCheck
 from datetime import datetime
 from app.utils.decorators import permission_required
+from app.utils import timezone
 
 inventory_bp = Blueprint('inventory', __name__)
 
@@ -131,7 +132,7 @@ def void_purchase(purchase_id):
         # 作废采购单
         purchase.status = 'void'
         purchase.void_reason = reason
-        purchase.void_time = datetime.now()
+        purchase.void_time = timezone.now()
         purchase.void_by = current_user.username
         
         # 创建反向库存变动（冲减库存）
@@ -139,7 +140,7 @@ def void_purchase(purchase_id):
             move_type='退货',
             source=purchase.supplier,
             kg=-purchase.total_kg,  # 负数表示减少库存
-            move_time=datetime.now(),
+            move_time=timezone.now(),
             reference_id=purchase.id,
             reference_type='purchase_void',
             notes=f'作废采购单: {purchase.id} - {reason}',

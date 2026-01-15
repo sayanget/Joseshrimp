@@ -5,6 +5,7 @@ from flask import Blueprint, request, jsonify
 from app.models import Spec, Customer, AuditLog, Product
 from app import db
 from datetime import datetime
+from app.utils import timezone
 
 admin_api = Blueprint('admin_api', __name__)
 
@@ -83,7 +84,7 @@ def update_spec(spec_id):
         if 'updated_by' in data:
             spec.updated_by = data['updated_by']
         
-        spec.updated_at = datetime.utcnow()
+        spec.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify(spec.to_dict())
@@ -102,7 +103,7 @@ def deactivate_spec(spec_id):
         data = request.get_json()
         spec.active = False
         spec.updated_by = data.get('updated_by', 'system')
-        spec.updated_at = datetime.utcnow()
+        spec.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify(spec.to_dict())
@@ -121,7 +122,7 @@ def activate_spec(spec_id):
         data = request.get_json()
         spec.active = True
         spec.updated_by = data.get('updated_by', 'system')
-        spec.updated_at = datetime.utcnow()
+        spec.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify(spec.to_dict())
@@ -146,7 +147,7 @@ def update_spec_prices(spec_id):
         if 'updated_by' in data:
             spec.updated_by = data['updated_by']
         
-        spec.updated_at = datetime.utcnow()
+        spec.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify(spec.to_dict())
@@ -203,10 +204,10 @@ def get_memos():
                 query = query.filter(Memo.memo_date == target_date)
             except ValueError:
                 # 如果日期格式错误，默认返回当天
-                query = query.filter(Memo.memo_date == datetime.utcnow().date())
+                query = query.filter(Memo.memo_date == timezone.get_current_date())
         else:
             # 默认只显示今天的备忘录
-            query = query.filter(Memo.memo_date == datetime.utcnow().date())
+            query = query.filter(Memo.memo_date == timezone.get_current_date())
             
         memos = query.order_by(Memo.created_at.desc()).all()
         return jsonify({'items': [memo.to_dict() for memo in memos]})
@@ -223,7 +224,7 @@ def create_memo():
         if not data.get('content'):
             return jsonify({'error': '内容不能为空'}), 400
             
-        memo_date = datetime.utcnow().date()
+        memo_date = timezone.get_current_date()
         if data.get('memo_date'):
             try:
                 memo_date = datetime.strptime(data['memo_date'], '%Y-%m-%d').date()
@@ -265,7 +266,7 @@ def update_memo(memo_id):
         if 'updated_by' in data:
             memo.updated_by = data['updated_by']
             
-        memo.updated_at = datetime.utcnow()
+        memo.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify(memo.to_dict())
@@ -284,7 +285,7 @@ def delete_memo(memo_id):
             
         memo.active = False
         memo.updated_by = request.args.get('updated_by', 'admin')
-        memo.updated_at = datetime.utcnow()
+        memo.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify({'message': 'Memo deleted successfully'})
@@ -355,7 +356,7 @@ def update_customer(customer_id):
         if 'updated_by' in data:
             customer.updated_by = data['updated_by']
         
-        customer.updated_at = datetime.utcnow()
+        customer.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify(customer.to_dict())
@@ -484,7 +485,7 @@ def update_product(product_id):
         if 'updated_by' in data:
             product.updated_by = data['updated_by']
         
-        product.updated_at = datetime.utcnow()
+        product.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify(product.to_dict())
@@ -503,7 +504,7 @@ def deactivate_product(product_id):
         data = request.get_json()
         product.active = False
         product.updated_by = data.get('updated_by', 'system')
-        product.updated_at = datetime.utcnow()
+        product.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify(product.to_dict())
@@ -522,7 +523,7 @@ def activate_product(product_id):
         data = request.get_json()
         product.active = True
         product.updated_by = data.get('updated_by', 'system')
-        product.updated_at = datetime.utcnow()
+        product.updated_at = timezone.now()
         db.session.commit()
         
         return jsonify(product.to_dict())

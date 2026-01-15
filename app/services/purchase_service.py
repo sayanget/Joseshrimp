@@ -7,6 +7,7 @@ from datetime import datetime
 from sqlalchemy import func
 from decimal import Decimal
 import json
+from app.utils import timezone
 
 class PurchaseService:
     """采购业务逻辑"""
@@ -14,7 +15,7 @@ class PurchaseService:
     @staticmethod
     def generate_purchase_id():
         """生成采购单号：PURCH-YYYYMMDD-序号"""
-        today = datetime.now().strftime('%Y%m%d')
+        today = timezone.get_current_datetime_str('%Y%m%d')
         prefix = f'PURCH-{today}-'
         
         # 查询今日最大序号
@@ -55,7 +56,7 @@ class PurchaseService:
         # 创建采购单
         purchase = Purchase(
             id=PurchaseService.generate_purchase_id(),
-            purchase_time=purchase_time or datetime.now(),
+            purchase_time=purchase_time or timezone.now(),
             supplier=supplier,
             notes=notes,
             created_by=created_by

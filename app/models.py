@@ -7,6 +7,7 @@ from sqlalchemy import CheckConstraint, event
 from sqlalchemy.orm import validates
 from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from app.utils import timezone
 
 class SystemConfig(db.Model):
     """系统配置表"""
@@ -15,7 +16,7 @@ class SystemConfig(db.Model):
     key = db.Column(db.String(50), primary_key=True)
     value = db.Column(db.Text, nullable=False)
     description = db.Column(db.String(200))
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=timezone.now, onupdate=timezone.now)
     updated_by = db.Column(db.String(50))
     
     @staticmethod
@@ -47,7 +48,7 @@ class SystemConfig(db.Model):
                 config.description = description
             if updated_by:
                 config.updated_by = updated_by
-            config.updated_at = datetime.utcnow()
+            config.updated_at = timezone.now()
         else:
             config = SystemConfig(
                 key=key,
@@ -79,9 +80,9 @@ class Spec(db.Model):
     width = db.Column(db.Integer, nullable=False)
     kg_per_box = db.Column(db.Numeric(10, 3), nullable=False)
     active = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=timezone.now)
     updated_by = db.Column(db.String(50))
     
     # 关系
@@ -113,9 +114,9 @@ class Customer(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False)
     credit_allowed = db.Column(db.Boolean, default=False, nullable=False)
     active = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=timezone.now)
     updated_by = db.Column(db.String(50))
     
     # 关系
@@ -142,9 +143,9 @@ class Product(db.Model):
     cash_price = db.Column(db.Numeric(10, 2), nullable=False)  # 现金结算价格($/KG)
     credit_price = db.Column(db.Numeric(10, 2), nullable=False)  # 信用结算价格($/KG)
     active = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=timezone.now)
     updated_by = db.Column(db.String(50))
     
     # 关系
@@ -179,9 +180,9 @@ class Memo(db.Model):
     active = db.Column(db.Boolean, default=True, nullable=False)
     reference_type = db.Column(db.String(20))  # 'sale' or 'purchase'
     reference_id = db.Column(db.String(50))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=timezone.now)
     updated_by = db.Column(db.String(50))
     
     def to_dict(self):
@@ -243,9 +244,9 @@ class Purchase(db.Model):
     void_reason = db.Column(db.Text)
     void_time = db.Column(db.DateTime)
     void_by = db.Column(db.String(50))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=timezone.now)
     updated_by = db.Column(db.String(50))
     
     # 关系
@@ -294,7 +295,7 @@ class PurchaseItem(db.Model):
     kg = db.Column(db.Numeric(10, 3), nullable=False)
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)
     total_amount = db.Column(db.Numeric(12, 2), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     
     __table_args__ = (
         CheckConstraint('kg > 0', name='check_purchase_kg_positive'),
@@ -331,9 +332,9 @@ class Sale(db.Model):
     void_reason = db.Column(db.Text)
     void_time = db.Column(db.DateTime)
     void_by = db.Column(db.String(50))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
-    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=timezone.now)
     updated_by = db.Column(db.String(50))
     
     # 关系
@@ -383,11 +384,11 @@ class Remittance(db.Model):
     __tablename__ = 'remittance'
     
     id = db.Column(db.Integer, primary_key=True)
-    remittance_time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    remittance_time = db.Column(db.DateTime, nullable=False, default=timezone.now)
     sale_id = db.Column(db.String(50), db.ForeignKey('sale.id'), nullable=False)
     amount = db.Column(db.Numeric(12, 2), nullable=False)  # 回款金额
     notes = db.Column(db.Text)  # 备注
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
     
     __table_args__ = (
@@ -423,7 +424,7 @@ class SaleItem(db.Model):
     subtotal_kg = db.Column(db.Numeric(12, 3), default=0, nullable=False)
     unit_price = db.Column(db.Numeric(10, 2), nullable=True)  # 单价（每KG）
     total_amount = db.Column(db.Numeric(12, 2), default=0, nullable=False)  # 小计金额
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     
     __table_args__ = (
         CheckConstraint('box_qty >= 0', name='check_box_qty_non_negative'),
@@ -467,7 +468,7 @@ class StockMove(db.Model):
     void_reason = db.Column(db.Text)
     void_time = db.Column(db.DateTime)
     void_by = db.Column(db.String(50))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
     
     __table_args__ = (
@@ -504,7 +505,7 @@ class AuditLog(db.Model):
     action = db.Column(db.String(20), nullable=False)
     old_value = db.Column(db.Text)
     new_value = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
     ip_address = db.Column(db.String(50))
     
@@ -539,7 +540,7 @@ class InventoryCheck(db.Model):
     theoretical_kg = db.Column(db.Numeric(12, 3), nullable=False)
     difference_kg = db.Column(db.Numeric(12, 3), nullable=False)
     notes = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     created_by = db.Column(db.String(50), nullable=False)
     
     def calculate_difference(self):
@@ -609,7 +610,7 @@ class User(UserMixin, db.Model):
     active = db.Column(db.Boolean, default=True, nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     role = db.relationship('Role', backref='users')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=timezone.now, nullable=False)
     last_login = db.Column(db.DateTime)
     
     @property
