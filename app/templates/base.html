@@ -24,6 +24,11 @@
                 <i class="bi bi-shrimp"></i> <span data-i18n="common.system_name">Comercializadora de Camarón
                     Lizfer</span>
             </a>
+            <!-- 时钟显示 (移动端也可见) -->
+            <div class="navbar-text text-white me-auto ms-2">
+                <i class="bi bi-clock"></i>
+                <span id="currentTime" style="font-family: monospace; font-size: 0.85rem;">--:--:--</span>
+            </div>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -113,11 +118,6 @@
                     {% endif %}
                 </ul>
                 <div class="d-flex align-items-center">
-                    <!-- 时钟显示 -->
-                    <div class="navbar-text text-white me-2">
-                        <i class="bi bi-clock"></i>
-                        <span id="currentTime" style="font-family: monospace; font-size: 0.85rem;">--:--:--</span>
-                    </div>
                     <!-- 主题切换 -->
                     <button class="btn btn-sm btn-outline-light me-3" id="themeToggle" type="button" title="切换主题">
                         <i class="bi bi-moon-stars" id="themeIcon"></i>
