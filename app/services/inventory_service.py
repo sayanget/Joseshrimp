@@ -70,6 +70,11 @@ class InventoryService:
             Product.name
         ).all()
         
+        # 获取所有启用的商品名称
+        active_products = {
+            p[0] for p in db.session.query(Product.name).filter(Product.active == True).all()
+        }
+        
         # 构建商品库存字典
         stock_dict = {}
         
@@ -84,13 +89,14 @@ class InventoryService:
             else:
                 stock_dict[item.product_name] = -float(item.total_kg or 0)
         
-        # 转换为列表并排序
+        # 转换为列表并排序（仅包含启用的商品）
         result = [
             {
                 'product_name': name,
                 'stock_kg': kg
             }
             for name, kg in stock_dict.items()
+            if name in active_products
         ]
         
         # 按库存量降序排序
