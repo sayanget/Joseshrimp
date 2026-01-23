@@ -147,6 +147,66 @@ class PurchaseService:
         return purchase
     
     @staticmethod
+    def void_purchase(purchase_id, reason, user):
+        """
+        作废采购单
+        
+        Args:
+            purchase_id: 采购单ID
+            reason: 作废原因
+            user: 操作用户
+            
+        Returns:
+            Purchase: 作废后的采购单对象
+            
+        Raises:
+            ValueError: 业务规则违反时抛出异常
+        """
+        if not reason:
+            raise ValueError('作废原因不能为空')
+            
+        purchase = Purchase.query.get(purchase_id)
+        if not purchase:
+            raise ValueError('采购单不存在')
+            
+        if purchase.status == 'void':
+            raise ValueError('采购单已作废')
+            
+        # 作废采购单
+        purchase.status = 'void'
+        purchase.void_reason = reason
+        purchase.void_time = timezone.now()
+        purchase.void_by = user.username
+        
+        # 创建反向库存变动（冲减库存）
+        stock_move = StockMove(
+            move_type='退货',
+            source=purchase.supplier,
+            kg=-purchase.total_kg,  # 负数表示减少库存
+            move_time=timezone.now(),
+            reference_id=purchase.id,
+            reference_type='purchase_void',
+            notes=f'作废采购单: {purchase.id} - {reason}',
+            created_by=user.username
+        )
+        db.session.add(stock_move)
+        
+        # 记录审计日志
+        audit_log = AuditLog(
+            table_name='purchase',
+            record_id=purchase.id,
+            action='VOID',
+            old_value=json.dumps({'status': 'active'}),
+            new_value=json.dumps({'status': 'void', 'reason': reason}),
+            created_by=user.username
+        )
+        db.session.add(audit_log)
+        
+        db.session.commit()
+        
+        return purchase
+    
+    @staticmethod
     def get_purchase_list(page=1, per_page=20, status='active'):
         """
         获取采购单列表（分页）

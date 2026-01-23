@@ -82,3 +82,27 @@ def get_purchase(purchase_id):
         return jsonify({'error': str(e)}), 404
     except Exception as e:
         return jsonify({'error': f'获取采购单详情失败: {str(e)}'}), 500
+
+@purchase_api.route('/<purchase_id>/void', methods=['POST'])
+def void_purchase(purchase_id):
+    """作废采购单API"""
+    try:
+        data = request.get_json()
+        reason = data.get('reason')
+        
+        purchase = PurchaseService.void_purchase(
+            purchase_id=purchase_id,
+            reason=reason,
+            user=current_user
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': '采购单已作废',
+            'purchase': purchase.to_dict()
+        })
+        
+    except ValueError as e:
+        return jsonify({'success': False, 'message': str(e)}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'作废采购单失败: {str(e)}'}), 500
